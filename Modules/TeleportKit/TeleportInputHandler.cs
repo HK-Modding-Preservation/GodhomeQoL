@@ -1,4 +1,5 @@
-﻿using UnityEngine.UI;
+﻿using InControl;
+using UnityEngine.UI;
 
 using GodhomeQoL.Modules.Tools;
 
@@ -14,7 +15,11 @@ internal sealed class TeleportInputHandler : IDisposable
         Rejected
     }
 
+    internal const char FightSeparator = '!';
+
     private readonly TeleportKit mod;
+    private string? queuedSeparatorSource;
+    private int separatorFrame = -1;
     private string inputBuffer = string.Empty;
     private int currentPage = 1;
     private bool gameWasPaused;
@@ -42,7 +47,9 @@ internal sealed class TeleportInputHandler : IDisposable
         ModHooks.HeroUpdateHook -= CheckInput;
         On.HeroController.Pause -= OnPause;
         ShowMenu = false;
+        ReleaseGamepad();
         inputBuffer = string.Empty;
+        queuedSeparatorSource = null;
         IsRebindingMenuKey = false;
         IsRebindingSaveKey = false;
         IsRebindingTeleportKey = false;
@@ -52,6 +59,11 @@ internal sealed class TeleportInputHandler : IDisposable
 
     private void CheckInput()
     {
+        if (!ShowMenu && (GamepadMode || gamepadHeroTaken))
+        {
+            ReleaseGamepad();
+        }
+
         bool isGamePaused = GameManager.instance.IsGamePaused();
 
         if (isGamePaused && !gameWasPaused)
@@ -142,9 +154,37 @@ internal sealed class TeleportInputHandler : IDisposable
             }
 
             ShowMenu = !ShowMenu;
+            GamepadMode = false;
             inputBuffer = string.Empty;
             currentPage = 1;
             mod.Log.Write($"Menu {(ShowMenu ? "opened" : "closed")}");
+        }
+        else if (IsTeleportGamepadButtonPressed())
+        {
+            if (!pauseEverOpened)
+            {
+                mod.Log.Write("Gamepad menu button ignored because pause menu was not opened yet");
+                ShowPauseHint();
+                return;
+            }
+
+            ShowMenu = !ShowMenu;
+            inputBuffer = string.Empty;
+            currentPage = 1;
+            if (ShowMenu)
+            {
+                GamepadMode = true;
+                GamepadIndex = TeleportMenuGUI.GetPageRange(currentPage).start;
+                TakeGamepadHero();
+            }
+
+            mod.Log.Write($"Menu {(ShowMenu ? "opened" : "closed")} with gamepad");
+            return;
+        }
+
+        if (ShowMenu && GamepadMode)
+        {
+            HandleGamepadMenu();
         }
 
         if (ShowMenu)
@@ -272,6 +312,7 @@ internal sealed class TeleportInputHandler : IDisposable
                 currentPage = 4;
             }
             inputBuffer = string.Empty;
+            GamepadIndex = TeleportMenuGUI.GetPageRange(currentPage).start;
             mod.Log.Write($"Switched to page {currentPage} (left)");
         }
 
@@ -283,24 +324,68 @@ internal sealed class TeleportInputHandler : IDisposable
                 currentPage = 1;
             }
             inputBuffer = string.Empty;
+            GamepadIndex = TeleportMenuGUI.GetPageRange(currentPage).start;
             mod.Log.Write($"Switched to page {currentPage} (right)");
         }
     }
 
     private void HandleMenuInput()
     {
-        for (int i = 0; i <= 9; i++)
+        string typed = Input.inputString ?? string.Empty;
+        bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        if (shiftHeld && Input.anyKeyDown)
         {
-            if (Input.GetKeyDown(KeyCode.Alpha0 + i) || Input.GetKeyDown(KeyCode.Keypad0 + i))
+            LogShiftInput(typed);
+        }
+
+        string? separatorSource = null;
+        if (typed.IndexOf(FightSeparator) >= 0)
+        {
+            separatorSource = "text";
+        }
+        else if (Input.GetKeyDown(KeyCode.Exclaim))
+        {
+            separatorSource = "exclaim key";
+        }
+        else if (shiftHeld && (Input.GetKeyDown(KeyCode.Alpha1) || Input.GetKeyDown(KeyCode.Keypad1)))
+        {
+            separatorSource = "shift+1";
+        }
+
+        bool separatorThisFrame = separatorSource != null;
+        if (separatorThisFrame)
+        {
+            separatorFrame = Time.frameCount;
+        }
+
+        separatorSource ??= queuedSeparatorSource;
+        queuedSeparatorSource = null;
+
+        if (separatorSource != null && CanAddSeparator())
+        {
+            inputBuffer += FightSeparator;
+            mod.Log.Write($"Input buffer: {inputBuffer} ({separatorSource})");
+        }
+
+        if (!separatorThisFrame)
+        {
+            for (int i = 0; i <= 9; i++)
             {
-                inputBuffer += i.ToString();
-                mod.Log.Write($"Input buffer: {inputBuffer}");
+                if (Input.GetKeyDown(KeyCode.Alpha0 + i) || Input.GetKeyDown(KeyCode.Keypad0 + i))
+                {
+                    inputBuffer += i.ToString();
+                    mod.Log.Write($"Input buffer: {inputBuffer}");
+                }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.Return) && inputBuffer.Length > 0)
         {
-            if (int.TryParse(inputBuffer, out int bossId))
+            if (inputBuffer.IndexOf(FightSeparator) >= 0)
+            {
+                StartStatueFightFromInput(inputBuffer);
+            }
+            else if (int.TryParse(inputBuffer, out int bossId))
             {
                 var boss = mod.Data.Bosses.FirstOrDefault(b => b.id == bossId);
                 if (!string.IsNullOrEmpty(boss.scene))
@@ -336,6 +421,243 @@ internal sealed class TeleportInputHandler : IDisposable
         }
     }
 
+    internal void QueueFightSeparator(string source)
+    {
+        if (Time.frameCount == separatorFrame)
+        {
+            return;
+        }
+
+        queuedSeparatorSource ??= source;
+    }
+
+    private bool CanAddSeparator()
+    {
+        if (inputBuffer.Length == 0)
+        {
+            return false;
+        }
+
+        int count = inputBuffer.Count(c => c == FightSeparator);
+        return count == 0 || (count == 1 && inputBuffer[inputBuffer.Length - 1] == FightSeparator);
+    }
+
+    internal static bool IsAltFightInput(string text)
+    {
+        int first = text.IndexOf(FightSeparator);
+        return first >= 0 && first + 1 < text.Length && text[first + 1] == FightSeparator;
+    }
+
+    private void LogShiftInput(string typed)
+    {
+        List<string> keys = new();
+        foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode)))
+        {
+            if (keyCode != KeyCode.None && keyCode < KeyCode.Mouse0 && Input.GetKeyDown(keyCode))
+            {
+                keys.Add(keyCode.ToString());
+            }
+        }
+
+        mod.Log.Write($"Shift input: text=\"{typed}\" keys=[{string.Join(", ", keys)}] buffer=\"{inputBuffer}\"");
+    }
+
+    private const string DefaultTeleportGamepadButton = "LeftStickButton";
+    private const int LastStatueBossId = 35;
+    private const int StatueRowsPerColumn = 9;
+    private static readonly string[] StatueLevelNames = { "Attuned", "Ascended", "Radiant" };
+
+    private bool gamepadHeroTaken;
+
+    internal bool GamepadMode { get; private set; }
+
+    internal int GamepadIndex { get; private set; } = -1;
+
+    internal int GamepadFightLevel { get; private set; } = 2;
+
+    internal string GamepadFightLevelName => StatueLevelNames[GamepadFightLevel];
+
+    internal bool GamepadFightAlt { get; private set; }
+
+    private static bool IsTeleportGamepadButtonPressed()
+    {
+        string raw = GodhomeQoL.GlobalSettings.TeleportKitControllerButton ?? DefaultTeleportGamepadButton;
+        if (!Enum.TryParse(raw, out InputControlType button) || button == InputControlType.None)
+        {
+            return false;
+        }
+
+        return WasPressed(device => device.GetControl(button));
+    }
+
+    private static bool WasPressed(Func<InputDevice, InputControl?> select)
+    {
+        foreach (InputDevice device in InputManager.Devices)
+        {
+            if (device == null)
+            {
+                continue;
+            }
+
+            InputControl? control = select(device);
+            if (control != null && control.WasPressed)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void TakeGamepadHero()
+    {
+        HeroController? hero = HeroController.instance;
+        if (gamepadHeroTaken || hero == null || !hero.acceptingInput || hero.controlReqlinquished)
+        {
+            return;
+        }
+
+        hero.RelinquishControl();
+        gamepadHeroTaken = true;
+    }
+
+    private void ReleaseGamepad()
+    {
+        GamepadMode = false;
+        if (!gamepadHeroTaken)
+        {
+            return;
+        }
+
+        gamepadHeroTaken = false;
+        HeroController? hero = HeroController.instance;
+        GameManager? manager = GameManager.instance;
+        if (hero != null && hero.controlReqlinquished && manager != null && !manager.IsInSceneTransition)
+        {
+            hero.RegainControl();
+        }
+    }
+
+    private void HandleGamepadMenu()
+    {
+        if (WasPressed(device => device.Action2))
+        {
+            ShowMenu = false;
+            inputBuffer = string.Empty;
+            ReleaseGamepad();
+            mod.Log.Write("Menu closed with gamepad");
+            return;
+        }
+
+        if (WasPressed(device => device.LeftBumper))
+        {
+            ChangeGamepadPage(-1);
+        }
+        else if (WasPressed(device => device.RightBumper))
+        {
+            ChangeGamepadPage(1);
+        }
+
+        (int start, int end) = TeleportMenuGUI.GetPageRange(currentPage);
+        end = Math.Min(end, mod.Data.Bosses.Length);
+        int count = end - start;
+        if (count <= 0)
+        {
+            return;
+        }
+
+        if (GamepadIndex < start || GamepadIndex >= end)
+        {
+            GamepadIndex = start;
+        }
+
+        int local = GamepadIndex - start;
+        int row = local % StatueRowsPerColumn;
+        if ((WasPressed(device => device.DPadUp) || WasPressed(device => device.LeftStickUp)) && row > 0)
+        {
+            local--;
+        }
+        else if ((WasPressed(device => device.DPadDown) || WasPressed(device => device.LeftStickDown)) && row < StatueRowsPerColumn - 1 && local + 1 < count)
+        {
+            local++;
+        }
+        else if ((WasPressed(device => device.DPadLeft) || WasPressed(device => device.LeftStickLeft)) && local >= StatueRowsPerColumn)
+        {
+            local -= StatueRowsPerColumn;
+        }
+        else if ((WasPressed(device => device.DPadRight) || WasPressed(device => device.LeftStickRight)) && local + StatueRowsPerColumn < count)
+        {
+            local += StatueRowsPerColumn;
+        }
+
+        GamepadIndex = start + local;
+
+        if (WasPressed(device => device.Action3))
+        {
+            GamepadFightLevel = (GamepadFightLevel + 1) % StatueLevelNames.Length;
+        }
+
+        if (WasPressed(device => device.RightTrigger))
+        {
+            GamepadFightAlt = !GamepadFightAlt;
+        }
+
+        var boss = mod.Data.Bosses[GamepadIndex];
+        if (WasPressed(device => device.Action1))
+        {
+            ShowMenu = false;
+            ReleaseGamepad();
+            mod.Log.Write($"Gamepad teleport to boss ID {boss.id} ({boss.name})");
+            mod.Teleport.StartTeleport(boss.position, boss.scene);
+        }
+        else if (WasPressed(device => device.Action4))
+        {
+            if (boss.id < 1 || boss.id > LastStatueBossId || !string.Equals(boss.scene, "GG_Workshop", StringComparison.Ordinal))
+            {
+                QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightNotStatue".Localize(), boss.id, LastStatueBossId));
+                return;
+            }
+
+            ShowMenu = false;
+            ReleaseGamepad();
+            mod.Log.Write($"Gamepad statue fight {boss.id} ({boss.name}) at level {GamepadFightLevel}, second version {GamepadFightAlt}");
+            mod.Teleport.StartStatueFight(boss.id, GamepadFightLevel, GamepadFightAlt);
+        }
+    }
+
+    private void ChangeGamepadPage(int delta)
+    {
+        currentPage += delta;
+        if (currentPage < 1)
+        {
+            currentPage = 4;
+        }
+        else if (currentPage > 4)
+        {
+            currentPage = 1;
+        }
+
+        inputBuffer = string.Empty;
+        GamepadIndex = TeleportMenuGUI.GetPageRange(currentPage).start;
+    }
+
+    private void StartStatueFightFromInput(string text)
+    {
+        bool alt = IsAltFightInput(text);
+        int first = text.IndexOf(FightSeparator);
+        string levelPart = first > 0 ? text.Substring(0, first) : string.Empty;
+        string numberPart = first >= 0 ? text.Substring(first + (alt ? 2 : 1)) : string.Empty;
+        if (!int.TryParse(levelPart, out int difficulty)
+            || !int.TryParse(numberPart, out int bossId))
+        {
+            mod.Log.Write($"Invalid statue fight input: {text}");
+            QuickMenu.ShowStatusMessageFromExternal("TeleportKit/FightFormat".Localize());
+            return;
+        }
+
+        mod.Teleport.StartStatueFight(bossId, difficulty - 1, alt);
+    }
+
     private void SetCustomTeleportPoint()
     {
         if (HeroController.instance == null)
@@ -353,14 +675,14 @@ internal sealed class TeleportInputHandler : IDisposable
         if (mod.Data.CustomTeleportPosition == null || string.IsNullOrEmpty(mod.Data.CustomTeleportScene))
         {
             mod.Log.Write("Attempted teleport to custom point but none was set");
+            QuickMenu.ShowStatusMessageFromExternal("TeleportKit/CustomPointNotSet".Localize());
             return;
         }
 
         if (GameManager.instance.sceneName != mod.Data.CustomTeleportScene)
         {
-            mod.Log.Write($"Custom teleport point is in another scene ({mod.Data.CustomTeleportScene}), point cleared");
-            mod.Data.CustomTeleportPosition = null;
-            mod.Data.CustomTeleportScene = null;
+            mod.Log.Write($"Custom teleport point is in another scene ({mod.Data.CustomTeleportScene})");
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/CustomPointOtherRoom".Localize(), mod.Data.CustomTeleportScene));
             return;
         }
 

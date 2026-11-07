@@ -11,7 +11,7 @@ public sealed partial class QuickMenu : Module
 {
     private sealed partial class QuickMenuController
     {
-        private static Font GetMenuFont()
+        internal static Font GetMenuFont()
         {
             return Modding.Menu.MenuResources.Perpetua ?? Resources.GetBuiltinResource<Font>("Arial.ttf");
         }

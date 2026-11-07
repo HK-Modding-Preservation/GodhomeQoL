@@ -149,11 +149,24 @@ public sealed partial class GearSwitcher : Module
         }
     }
 
-    internal static string CreateCustomPresetFromFullGear()
+    internal static string CreateCustomPresetFromCurrentGear()
     {
         EnsurePresetDefaults();
-        Dictionary<string, GearPreset> defaults = GearPresetDefaults.CreateDefaults();
-        if (!defaults.TryGetValue("FullGear", out GearPreset preset))
+        GearPreset? preset = null;
+        string currentName = NormalizeBuiltinPresetName(GetLastPresetName());
+        if (!string.IsNullOrEmpty(currentName) && TryGetPreset(currentName, out GearPreset current) && current != null)
+        {
+            try
+            {
+                preset = JsonConvert.DeserializeObject<GearPreset>(JsonConvert.SerializeObject(current));
+            }
+            catch (Exception ex)
+            {
+                LogSuppressed(ex, "GearSwitcher.Presets.cs/CreateCustomPresetFromCurrentGear");
+            }
+        }
+
+        if (preset == null && !GearPresetDefaults.CreateDefaults().TryGetValue("FullGear", out preset))
         {
             return string.Empty;
         }
@@ -299,6 +312,13 @@ public sealed partial class GearSwitcher : Module
         if (!HasAnyBindingEnabled(preset))
         {
             RestoreAllBindingsImmediate();
+        }
+
+        string? previousPreset = GodhomeQoL.GlobalSettings.GearSwitcher.LastPreset;
+        if (!string.IsNullOrEmpty(previousPreset)
+            && !string.Equals(NormalizeBuiltinPresetName(previousPreset!), presetName, StringComparison.OrdinalIgnoreCase))
+        {
+            ForgetTemporaryBuiltinCharms(previousPreset);
         }
 
         GodhomeQoL.GlobalSettings.GearSwitcher.LastPreset = presetName;

@@ -99,7 +99,7 @@ public sealed partial class QuickMenu : Module
 
             if (!clear && TryGetMaskDamageHotkeyConflictOwners(key, out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(maskDamageToggleUiKeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }
@@ -176,7 +176,7 @@ public sealed partial class QuickMenu : Module
 
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, "Freeze Hitboxes Unfreeze Hotkey", out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(freezeHitboxesUnfreezeKeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }

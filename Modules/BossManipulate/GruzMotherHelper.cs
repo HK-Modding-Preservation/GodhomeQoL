@@ -331,6 +331,11 @@ public sealed class GruzMotherHelper : Module
 
     private static void RestoreVanillaHealth(GameObject gruz, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (gruz == null || !IsGruzObject(gruz))
         {
             return;

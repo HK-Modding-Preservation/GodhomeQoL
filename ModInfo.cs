@@ -9,7 +9,7 @@ namespace GodhomeQoL
     internal class ModInfo
     {
         public const string Name = "GodhomeQoL";
-        public const string Version = "1.0.1.4";
+        public const string Version = "2.0.0.0";
 
     }
 }

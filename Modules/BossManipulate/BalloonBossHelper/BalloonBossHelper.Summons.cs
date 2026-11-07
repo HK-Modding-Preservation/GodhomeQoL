@@ -198,6 +198,11 @@ public abstract partial class BalloonBossHelper : Module
 
     private void RestoreVanillaSummonHealth(GameObject summon, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (summon == null || !IsBossSummonObject(summon))
         {
             return;

@@ -4,8 +4,17 @@ namespace GodhomeQoL.Modules.QoL;
 
 internal sealed class TeleportManager : IDisposable
 {
+    private const string WorkshopScene = "GG_Workshop";
+    private const int LastStatueId = 35;
+    private const float StatueSearchRadius = 6f;
+    private const float StatueFloorTolerance = 12f;
+    private const float HeroReadyTimeoutSeconds = 6f;
+    private const float StatueFightStartTimeoutSeconds = 10f;
+    private static readonly string[] StatueLevelNames = { "Attuned", "Ascended", "Radiant" };
+
     private readonly TeleportKit mod;
     private bool isBusy;
+    private bool statueFightActive;
     private static bool pendingUiReset;
     private static readonly HashSet<string> GodhomeHubScenes = new(StringComparer.Ordinal)
     {
@@ -17,21 +26,20 @@ internal sealed class TeleportManager : IDisposable
     internal TeleportManager(TeleportKit mod)
     {
         this.mod = mod;
-        ModHooks.BeforeSceneLoadHook += OnSceneChange;
     }
 
-    internal bool IsBusy => isBusy;
+    internal bool IsBusy => isBusy || statueFightActive;
 
     public void Dispose()
     {
-        ModHooks.BeforeSceneLoadHook -= OnSceneChange;
         isBusy = false;
+        statueFightActive = false;
         pendingUiReset = false;
     }
 
     internal void StartTeleport(Vector3 position, string scene)
     {
-        if (isBusy || GameManager.instance.IsGamePaused())
+        if (IsBusy || GameManager.instance.IsGamePaused())
         {
             return;
         }
@@ -46,6 +54,269 @@ internal sealed class TeleportManager : IDisposable
         mod.Input.ShowMenu = false;
         mod.Log.Write($"Starting teleport to {position} in {scene}");
         GameManager.instance.StartCoroutine(TeleportToBoss(position, scene));
+    }
+
+    internal void StartStatueFight(int bossId, int level, bool altVersion)
+    {
+        if (IsBusy || GameManager.instance.IsGamePaused())
+        {
+            return;
+        }
+
+        if (level < 0 || level >= StatueLevelNames.Length)
+        {
+            QuickMenu.ShowStatusMessageFromExternal("TeleportKit/FightBadLevel".Localize());
+            return;
+        }
+
+        (int id, string name, Vector3 position, string scene) boss = mod.Data.Bosses.FirstOrDefault(b => b.id == bossId);
+        if (bossId < 1 || bossId > LastStatueId || !string.Equals(boss.scene, WorkshopScene, StringComparison.Ordinal))
+        {
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightNotStatue".Localize(), bossId, LastStatueId));
+            return;
+        }
+
+        if (SpeedChanger.IsTimeScaleFrozen || FreezeHitboxes.IsFreezeActive())
+        {
+            mod.Log.Write("Statue fight blocked: Freeze Hitboxes is active.");
+            return;
+        }
+
+        statueFightActive = true;
+        mod.Input.ShowMenu = false;
+        mod.Log.Write($"Starting statue fight {bossId} ({boss.name}) at level {level}, second version {altVersion}");
+        GameManager.instance.StartCoroutine(StatueFightRoutine(boss.position, bossId, level, altVersion));
+    }
+
+    private IEnumerator StatueFightRoutine(Vector3 statuePosition, int bossId, int level, bool altVersion)
+    {
+        try
+        {
+            yield return TeleportToBoss(statuePosition, WorkshopScene);
+
+            float deadline = Time.realtimeSinceStartup + HeroReadyTimeoutSeconds;
+            while (!IsReadyForStatueFight())
+            {
+                if (Time.realtimeSinceStartup > deadline)
+                {
+                    mod.Log.Write("Statue fight aborted: the hero is not ready in GG_Workshop");
+                    yield break;
+                }
+
+                yield return null;
+            }
+
+            yield return new WaitForSeconds(0.2f);
+
+            if (!IsReadyForStatueFight())
+            {
+                mod.Log.Write("Statue fight aborted: the hero is not ready in GG_Workshop");
+                yield break;
+            }
+
+            BeginStatueFight(statuePosition, bossId, level, altVersion);
+        }
+        finally
+        {
+            statueFightActive = false;
+        }
+    }
+
+    private static bool IsReadyForStatueFight()
+    {
+        GameManager? manager = GameManager.instance;
+        HeroController? hero = HeroController.instance;
+        if (manager == null || hero == null)
+        {
+            return false;
+        }
+
+        return string.Equals(manager.sceneName, WorkshopScene, StringComparison.Ordinal)
+            && !manager.IsInSceneTransition
+            && !manager.IsGamePaused()
+            && manager.gameState == GameState.PLAYING
+            && hero.acceptingInput
+            && !hero.controlReqlinquished
+            && hero.cState.onGround
+            && !hero.cState.transitioning
+            && !hero.cState.dead
+            && !SpeedChanger.IsTimeScaleFrozen
+            && !FreezeHitboxes.IsFreezeActive();
+    }
+
+    private void BeginStatueFight(Vector3 statuePosition, int bossId, int level, bool altVersion)
+    {
+        BossStatue? statue = FindStatueNear(statuePosition, out float offset);
+        if (statue == null || statue.bossUIControlFSM == null)
+        {
+            mod.Log.Write($"Statue fight aborted: no statue near {statuePosition}");
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightStatueNotFound".Localize(), bossId));
+            return;
+        }
+
+        mod.Log.Write($"Statue for {bossId}: {statue.name} (alt version now: {statue.UsingDreamVersion}, wanted: {altVersion}, offset {offset:0.00})");
+
+        if (statue.hasNoTiers)
+        {
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightNotStatue".Localize(), bossId, LastStatueId));
+            return;
+        }
+
+        if (altVersion && !statue.HasDreamVersion)
+        {
+            BossStatue.BossUIDetails mainDetails = statue.bossDetails;
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightNoSecondVersion".Localize(), Lang.Get(mainDetails.nameKey, mainDetails.nameSheet)));
+            return;
+        }
+
+        BossStatue.Completion completion = altVersion ? statue.DreamStatueState : statue.StatueState;
+        BossStatue.BossUIDetails details = altVersion ? statue.dreamBossDetails : statue.bossDetails;
+        string bossName = Lang.Get(details.nameKey, details.nameSheet);
+
+        if (!completion.isUnlocked)
+        {
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightLocked".Localize(), bossName));
+            return;
+        }
+
+        if (level == 2 && !completion.completedTier2 && !ModuleManager.IsModuleLoaded<UnlockRadiant>())
+        {
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightRadiantLocked".Localize(), bossName));
+            return;
+        }
+
+        if (BossSequenceController.IsInSequence)
+        {
+            BossSequenceController.Reset();
+            mod.Log.Write("Cleared a pantheon run that was left without finishing");
+        }
+
+        if (statue.UsingDreamVersion != altVersion)
+        {
+            bool lever = ReflectionHelper.GetField<BossStatue, IBossStatueToggle>(statue, "dreamToggle") is BossStatueLever;
+            statue.SetDreamVersion(altVersion, lever, false);
+            mod.Log.Write($"Statue {statue.name} switched to {(altVersion ? "second" : "first")} version (lever: {lever})");
+        }
+
+        if (!TryLoadStatueBoss(statue, level))
+        {
+            QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightFailed".Localize(), bossName));
+            return;
+        }
+
+        PlayMakerFSM challengeFsm = statue.bossUIControlFSM;
+        GameObject? camLock = challengeFsm.FsmVariables.FindFsmGameObject("CamLock")?.Value;
+        if (camLock != null)
+        {
+            camLock.SetActive(true);
+        }
+
+        HeroController hero = HeroController.instance;
+        FSMUtility.SendEventToGameObject(challengeFsm.gameObject, "NPC CONTROL OFF");
+        PlayerData.instance.SetBool("disablePause", true);
+        hero.RelinquishControl();
+        hero.StopAnimationControl();
+
+        challengeFsm.SetState("Take Control");
+        mod.Log.Write($"Statue fight started: {bossName} {StatueLevelNames[level]}");
+        QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightStarting".Localize(), bossName, StatueLevelNames[level]));
+        GameManager.instance.StartCoroutine(StatueFightWatchdog(challengeFsm, camLock, bossName, USceneManager.GetActiveScene().handle));
+    }
+
+    private IEnumerator StatueFightWatchdog(PlayMakerFSM challengeFsm, GameObject? camLock, string bossName, int sceneHandle)
+    {
+        yield return new WaitForSecondsRealtime(StatueFightStartTimeoutSeconds);
+
+        GameManager? manager = GameManager.instance;
+        HeroController? hero = HeroController.instance;
+        if (manager == null
+            || hero == null
+            || manager.IsInSceneTransition
+            || USceneManager.GetActiveScene().handle != sceneHandle)
+        {
+            yield break;
+        }
+
+        string state = challengeFsm != null ? challengeFsm.ActiveStateName : "none";
+        mod.Log.Write($"Statue fight did not start in {StatueFightStartTimeoutSeconds} s (state {state}); giving control back");
+
+        BossSceneController.SetupEvent = null;
+        if (challengeFsm != null)
+        {
+            challengeFsm.SetState("Inert");
+            Collider2D? inspectCollider = challengeFsm.GetComponent<Collider2D>();
+            if (inspectCollider != null)
+            {
+                inspectCollider.enabled = true;
+            }
+
+            FSMUtility.SendEventToGameObject(challengeFsm.gameObject, "CONVO CANCEL");
+        }
+
+        if (camLock != null)
+        {
+            camLock.SetActive(false);
+        }
+
+        FsmBool? dreamConvo = hero.gameObject.LocateMyFSM("Dream Nail")?.FsmVariables.FindFsmBool("Dream Convo");
+        if (dreamConvo != null)
+        {
+            dreamConvo.Value = false;
+        }
+
+        PlayerData.instance.SetBool("disablePause", false);
+        hero.RegainControl();
+        hero.StartAnimationControl();
+        QuickMenu.ShowStatusMessageFromExternal(string.Format("TeleportKit/FightFailed".Localize(), bossName));
+    }
+
+    private static BossStatue? FindStatueNear(Vector3 position, out float offset)
+    {
+        BossStatue? best = null;
+        offset = float.MaxValue;
+        foreach (BossStatue statue in UObject.FindObjectsOfType<BossStatue>())
+        {
+            Vector3 point = statue.bossUIControlFSM != null
+                ? statue.bossUIControlFSM.transform.position
+                : statue.transform.position;
+            if (Mathf.Abs(point.y - position.y) > StatueFloorTolerance)
+            {
+                continue;
+            }
+
+            float dx = Mathf.Abs(point.x - position.x);
+            if (dx < offset)
+            {
+                offset = dx;
+                best = statue;
+            }
+        }
+
+        return offset <= StatueSearchRadius ? best : null;
+    }
+
+    private bool TryLoadStatueBoss(BossStatue statue, int level)
+    {
+        GameObject holder = new("GodhomeQoL_StatueFight");
+        holder.SetActive(false);
+        try
+        {
+            BossChallengeUI challengeUi = holder.AddComponent<BossChallengeUI>();
+            ReflectionHelper.SetField(challengeUi, "bossStatue", statue);
+            bool levelSelected = false;
+            challengeUi.OnLevelSelected += () => levelSelected = true;
+            challengeUi.LoadBoss(level, false);
+            return levelSelected;
+        }
+        catch (Exception ex)
+        {
+            mod.Log.Write($"Statue fight setup failed: {ex}");
+            return false;
+        }
+        finally
+        {
+            UObject.Destroy(holder);
+        }
     }
 
     private static void PlaceHero(Vector3 position)
@@ -314,17 +585,5 @@ internal sealed class TeleportManager : IDisposable
     {
         string? sceneName = GameManager.instance?.sceneName;
         pendingUiReset = !string.IsNullOrEmpty(sceneName) && GodhomeHubScenes.Contains(sceneName!);
-    }
-
-    private string OnSceneChange(string newSceneName)
-    {
-        if (mod.Data.CustomTeleportScene != null && newSceneName != mod.Data.CustomTeleportScene)
-        {
-            mod.Log.Write($"Scene changed from {mod.Data.CustomTeleportScene} to {newSceneName}, clearing custom teleport point");
-            mod.Data.CustomTeleportPosition = null;
-            mod.Data.CustomTeleportScene = null;
-        }
-
-        return newSceneName;
     }
 }

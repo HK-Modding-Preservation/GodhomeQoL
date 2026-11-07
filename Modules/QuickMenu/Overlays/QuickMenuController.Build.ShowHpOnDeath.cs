@@ -67,6 +67,18 @@ public sealed partial class QuickMenu : Module
 
             lastY = rowY;
             rowY += RowSpacing;
+            CreateKeybindRow(
+                content,
+                "ShowHPOnDeathHistoryKeyRow",
+                "ShowHPOnDeath/HistoryKey".Localize(),
+                rowY,
+                () => GetShowHpBindingLabel(ShowHpSettings.Keybinds.History),
+                StartShowHpHistoryRebind,
+                out showHpHistoryKeyValue
+            );
+
+            lastY = rowY;
+            rowY += RowSpacing;
             CreateFloatSliderRow(
                 content,
                 "ShowHPOnDeathFadeRow",
@@ -87,6 +99,10 @@ public sealed partial class QuickMenu : Module
 
             lastY = rowY + 40f;
             rowY += RowSpacing + 40f;
+
+            CreateButtonRow(content, "ShowHPOnDeathHistoryRow", "ShowHPOnDeath/History".Localize(), rowY, OnShowHpOnDeathHistoryClicked);
+            lastY = rowY;
+            rowY += RowSpacing;
 
             SetScrollContentHeight(content, viewHeight, lastY, RowHeight);
             CreateButtonRow(panel.transform, "ShowHPOnDeathResetRow", "ShowHPOnDeath/Reset".Localize(), resetY, OnShowHpOnDeathResetDefaultsClicked);

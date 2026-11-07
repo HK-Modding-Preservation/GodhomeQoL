@@ -109,6 +109,7 @@ public sealed class Cheats : Module
 
     internal static int KillAll()
     {
+        ShowHPOnDeath.MarkCheatKill();
         if (TryCompleteInstantSceneFight())
         {
             return 1;

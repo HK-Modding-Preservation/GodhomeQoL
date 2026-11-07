@@ -450,9 +450,10 @@ public sealed partial class QuickMenu : Module
             panelRect.sizeDelta = new Vector2(PanelWidth, panelHeight);
 
             Image panelImage = panel.AddComponent<Image>();
-            panelImage.color = OverlayPanelColor;
+            StyleHkPanel(panelImage);
 
             Text title = CreateText(panel.transform, "Title", $"Modules/{helperKey}".Localize(), 52, TextAnchor.MiddleCenter);
+            StyleHkTitle(title);
             RectTransform titleRect = title.rectTransform;
             titleRect.anchorMin = new Vector2(0.5f, 0.5f);
             titleRect.anchorMax = new Vector2(0.5f, 0.5f);

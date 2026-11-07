@@ -302,6 +302,11 @@ public sealed class MantisLordHelper : Module
 
     private static void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || GetMantisLordTarget(boss) == MantisLordTarget.Unknown)
         {
             return;

@@ -40,10 +40,13 @@ internal sealed class InspectHelper : Module {
 
 		public static string Localize(string key) => L11nUtil.Localize(key);
 
-		public static void KillAllSafe() => FindObjectsOfType<HealthManager>()
-			.Filter(EnemyDetector.IsValidEnemy)
-			.Reject(hm => hm.IsInvincible)
-			.ForEach(hm => hm.Die(null, AttackTypes.RuinsWater, true));
+		public static void KillAllSafe() {
+			global::GodhomeQoL.Modules.Tools.ShowHPOnDeath.MarkCheatKill();
+			FindObjectsOfType<HealthManager>()
+				.Filter(EnemyDetector.IsValidEnemy)
+				.Reject(hm => hm.IsInvincible)
+				.ForEach(hm => hm.Die(null, AttackTypes.RuinsWater, true));
+		}
 
 		public static void SkipBoss(int count = 1) =>
 			GlobalCoroutineExecutor.Start(SkipBossCoroutine(count));
@@ -53,6 +56,7 @@ internal sealed class InspectHelper : Module {
 				yield break;
 			}
 
+			global::GodhomeQoL.Modules.Tools.ShowHPOnDeath.MarkCheatKill();
 			controller.bossesDeadWaitTime = 0f;
 			controller.EndBossScene();
 

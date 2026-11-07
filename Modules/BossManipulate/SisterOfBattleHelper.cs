@@ -393,6 +393,11 @@ public sealed class SisterOfBattleHelper : Module
 
     private static void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || GetSisterTarget(boss) == SisterTarget.Unknown)
         {
             return;

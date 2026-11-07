@@ -18,7 +18,7 @@ public sealed class FastText : Module
     private static void OnNextChar(On.DialogueBox.orig_ShowNextChar orig, DialogueBox self)
     {
         TextMeshPro? text = ReflectionHelper.GetField<DialogueBox, TextMeshPro>(self, "textMesh");
-        if (text == null)
+        if (text == null || text.textInfo == null || text.textInfo.pageCount <= 0)
         {
             orig(self);
             return;

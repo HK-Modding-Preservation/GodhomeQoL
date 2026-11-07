@@ -93,7 +93,7 @@ public sealed partial class QuickMenu : Module
             bool clear = string.Equals(speedTogglePrevKey, key.ToString(), StringComparison.OrdinalIgnoreCase);
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, "SpeedChanger/ToggleKey".Localize(), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(speedChangerToggleKeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }
@@ -116,7 +116,7 @@ public sealed partial class QuickMenu : Module
             bool clear = string.Equals(speedInputPrevKey, key.ToString(), StringComparison.OrdinalIgnoreCase);
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, "SpeedChanger/InputKey".Localize(), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(speedChangerInputKeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }

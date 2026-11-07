@@ -50,7 +50,7 @@ public sealed partial class QuickMenu : Module
         private const float QuickPanelFreeHeight = 1080f;
         private const float QuickSettingsPanelHeight = 1100f;
         private const float QuickSettingsRowStartY = 320f;
-        private static readonly Color OverlayDimColor = new Color(0f, 0f, 0f, 0.55f);
+        private static readonly Color OverlayDimColor = new Color(0f, 0f, 0f, 0.86f);
         private static readonly Color OverlayPanelColor = new Color(0f, 0f, 0f, 0.75f);
         private const float QuickButtonWidth = 260f;
         private const float QuickButtonHeight = 36f;
@@ -96,19 +96,19 @@ public sealed partial class QuickMenu : Module
         private const float HornetSentinelHelperRowSpacing = 44f;
         private const float QolRowSpacing = 44f;
         private const float FpsBoostRowSpacing = 44f;
-        private const float GearSwitcherRowSpacing = 60f;
+        private const float GearSwitcherRowSpacing = 74f;
         private const float ToggleRowIconSize = 28f;
         private const float ToggleRowIconSpacing = 8f;
         private const float RowWidth = 820f;
         private const float RowHeight = 44f;
-        private const float GearSwitcherCharmCostRowHeight = 120f;
-        private const float GearSwitcherCharmCostRowSpacing = 120f;
+        private const float GearSwitcherCharmCostRowHeight = 130f;
+        private const float GearSwitcherCharmCostRowSpacing = 140f;
         private const float GearSwitcherCharmPromptRowHeight = 88f;
         private const float GearSwitcherTitleY = 430f;
-        private const float GearSwitcherHintY = 380f;
+        private const float GearSwitcherHintY = 345f;
         private const float GearSwitcherHintHeight = 28f;
         private const float GearSwitcherContentRowStartY = 300f;
-        private const float GearSwitcherContentTopPadding = 10f;
+        private const float GearSwitcherContentTopPadding = 45f;
         private const float RowStartY = 120f;
         private const float GearSwitcherRowStartY = 120f;
         private const float GearSwitcherTopPadding = 60f;
@@ -119,7 +119,7 @@ public sealed partial class QuickMenu : Module
         private const float ScrollTopPadding = 20f;
         private const float ScrollBottomPadding = 10f;
         private const float ScrollbarWidth = 8f;
-        private const float ScrollbarRightPadding = 10f;
+        private const float ScrollbarRightPadding = 6f;
         private const float CollectorPanelWidth = PanelWidth;
         private const float CollectorPanelHeight = PanelHeight;
         private const float CollectorRowWidth = 920f;
@@ -153,9 +153,9 @@ public sealed partial class QuickMenu : Module
         private static readonly Color GearSwitcherPresetEditedColor = new Color(1f, 0.25f, 0.25f, 1f);
         private static readonly GearPreset DefaultGearPreset = new();
         private static readonly Color GearSwitcherBindingActiveColor = new Color(1f, 0.95f, 0.7f, 1f);
-        private static readonly Color QuickMenuBaseColor = new Color(0f, 0f, 0f, 0.85f);
-        private static readonly Color QuickMenuZoteEnabledColor = new Color(0.1f, 0.45f, 0.1f, 0.85f);
-        private static readonly Color QuickMenuZoteDisabledColor = new Color(0.45f, 0.1f, 0.1f, 0.85f);
+        private static readonly Color QuickMenuBaseColor = new Color(0.08f, 0.05f, 0.02f, 0.86f);
+        private static readonly Color QuickMenuZoteEnabledColor = new Color(1f, 0.85f, 0.45f, 1f);
+        private static readonly Color QuickMenuZoteDisabledColor = new Color(0.35f, 0.35f, 0.35f, 0.6f);
         private static readonly string[] SpeedChangerDisplayOptions = new[] { "#.##", "%", "Off" };
         private static readonly string[] BossChallengeGpzOptions = new[]
         {

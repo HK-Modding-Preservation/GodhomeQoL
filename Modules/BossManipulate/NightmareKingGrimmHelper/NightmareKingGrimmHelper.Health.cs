@@ -59,6 +59,11 @@ public sealed partial class NightmareKingGrimmHelper : Module
 
     private static void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || !IsNightmareKingGrimmObject(boss))
         {
             return;

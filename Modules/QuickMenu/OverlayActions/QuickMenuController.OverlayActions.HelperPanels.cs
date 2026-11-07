@@ -56,9 +56,6 @@ public sealed partial class QuickMenu : Module
         {
             bool wasEnabled = GetZoteHelperEnabled();
             ResetZoteHelperDefaults();
-            Modules.BossChallenge.ForceGreyPrinceEnterType.gpzEnterType =
-                Modules.BossChallenge.ForceGreyPrinceEnterType.EnterType.Off;
-            ApplyBossGpzOption(0);
 
             if (wasEnabled)
             {

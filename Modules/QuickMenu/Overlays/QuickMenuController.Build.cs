@@ -29,6 +29,8 @@ public sealed partial class QuickMenu : Module
             BuildRandomPantheonsOverlayUi();
             BuildTrueBossRushOverlayUi();
             BuildCheatsOverlayUi();
+            BuildSettingsPresetsOverlayUi();
+            BuildBossHistoryOverlayUi();
             BuildAlwaysFuriousOverlayUi();
             BuildGearSwitcherOverlayUi();
             BuildGearSwitcherCharmCostOverlayUi();
@@ -164,6 +166,19 @@ public sealed partial class QuickMenu : Module
                 }
             }
 
+            CreateKeybindRow(
+                content,
+                "QuickMenuGamepadButtonRow",
+                "QuickMenu/GamepadButton".Localize(),
+                rowY,
+                GetQuickMenuControllerButtonLabel,
+                StartQuickMenuControllerRebind,
+                out Text gamepadButtonValue
+            );
+            quickMenuControllerButtonValue = gamepadButtonValue;
+            lastY = rowY;
+            rowY += RowSpacing;
+
             CreateFloatSliderRow(
                 content,
                 "QuickMenuOpacityRow",
@@ -216,6 +231,7 @@ public sealed partial class QuickMenu : Module
             rect.sizeDelta = new Vector2(600f, 40f);
 
             statusText = text;
+            StyleHkStatusText(text);
             statusText.gameObject.SetActive(false);
         }
 

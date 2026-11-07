@@ -60,9 +60,19 @@ public sealed class GlobalSettings : SettingBase<GlobalSettingAttribute>
 
     public string QuickMenuHotkey { get; set; } = "F3";
 
+    public string QuickMenuControllerButton { get; set; } = "RightStickButton";
+
+    public string TeleportKitControllerButton { get; set; } = "LeftStickButton";
+
     public int QuickMenuOpacity { get; set; } = 100;
 
     public Dictionary<string, string> QuickMenuOverlayHotkeys { get; set; } = new();
 
     public string NailDamageCheckKeybind { get; set; } = string.Empty;
+
+    public Dictionary<string, PerSaveMirror> PerSaveMirrors { get; set; } = new();
+
+    public List<SettingsPreset> SettingsPresets { get; set; } = new();
+
+    public string? ActiveSettingsPreset { get; set; }
 }

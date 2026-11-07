@@ -106,11 +106,6 @@ public sealed partial class GearSwitcher : Module
             return CharmSelectResult.Unknown;
         }
 
-        if (IsBuiltinPresetName(presetName))
-        {
-            return CharmSelectResult.BuiltinGear;
-        }
-
         if (IsCharmSelectionLocked(preset))
         {
             return CharmSelectResult.CharmsBound;
@@ -134,6 +129,11 @@ public sealed partial class GearSwitcher : Module
         else
         {
             list.Remove(charmId);
+        }
+
+        if (IsBuiltinPresetName(presetName))
+        {
+            GodhomeQoL.LocalSettings.GearSwitcherTemporaryCharms = list.ToList();
         }
 
         GodhomeQoL.SaveGlobalSettingsSafe();
@@ -228,6 +228,7 @@ public sealed partial class GearSwitcher : Module
         List<int>? desired = preset.EquippedCharms;
         if (desired == null)
         {
+            AdoptSavedTemporaryCharms();
             ReleaseManagedCharms(pd, preset);
             return;
         }
@@ -272,6 +273,40 @@ public sealed partial class GearSwitcher : Module
         {
             FinishCharmChange(pd, preset, grimmchildPutOn);
         }
+    }
+
+    internal static void ForgetTemporaryBuiltinCharms(string? presetName)
+    {
+        if (string.IsNullOrEmpty(presetName) || !IsBuiltinPresetName(presetName!))
+        {
+            return;
+        }
+
+        if (TryGetPreset(NormalizeBuiltinPresetName(presetName!), out GearPreset preset))
+        {
+            preset.EquippedCharms = null;
+        }
+
+        GodhomeQoL.LocalSettings.GearSwitcherTemporaryCharms = null;
+    }
+
+    private static void AdoptSavedTemporaryCharms()
+    {
+        List<int>? saved = GodhomeQoL.LocalSettings.GearSwitcherTemporaryCharms;
+        if (saved == null || saved.Count == 0)
+        {
+            return;
+        }
+
+        foreach (int charmId in saved)
+        {
+            if (charmId >= FirstCharmId && charmId <= LastCharmId && !managedCharmsApplied.Contains(charmId))
+            {
+                managedCharmsApplied.Add(charmId);
+            }
+        }
+
+        GodhomeQoL.LocalSettings.GearSwitcherTemporaryCharms = null;
     }
 
     private static void ReleaseManagedCharms(PlayerData pd, GearPreset preset)

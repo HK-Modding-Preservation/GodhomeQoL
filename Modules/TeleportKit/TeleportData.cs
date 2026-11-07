@@ -11,7 +11,7 @@ internal sealed class TeleportData
         (5, "Hornet Protector/Hornet Sentinel", new Vector3(60.69859f, 6.408124f, 0f), "GG_Workshop"),
         (6, "Massive Moss Charger", new Vector3(71.1746f, 6.408124f, 0f), "GG_Workshop"),
         (7, "Flukemarm", new Vector3(81.26862f, 6.408124f, 0f), "GG_Workshop"),
-        (8, "Sisters of Battle", new Vector3(90.92618f, 6.408124f, 0f), "GG_Workshop"),
+        (8, "Mantis Lords/Sisters of Battle", new Vector3(90.92618f, 6.408124f, 0f), "GG_Workshop"),
         (9, "Oblobbles", new Vector3(100.5547f, 6.408124f, 0f), "GG_Workshop"),
         (10, "Hive Knight", new Vector3(111.3527f, 6.408124f, 0f), "GG_Workshop"),
         (11, "Broken Vessel/Lost Kin", new Vector3(119.6147f, 6.408124f, 0f), "GG_Workshop"),

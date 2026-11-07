@@ -13,6 +13,10 @@ public sealed partial class QuickMenu : Module
 {
     private sealed partial class QuickMenuController
     {
+		private const float GearSwitcherIconScale = 0.85f;
+		private const float GearSwitcherSmallIconSize = 37f;
+		private const float GearSwitcherBigIconSize = 70f;
+
 		private static Button CreateGearSwitcherIconButton(Transform parent, string name, float offsetX, float offsetY, Color glowColor, out RectTransform rectTransform, out Image image, out Outline outline)
 		{
 			GameObject gameObject = new GameObject(name);
@@ -59,11 +63,11 @@ public sealed partial class QuickMenu : Module
 			if (sprite != null)
 			{
 				icon.sprite = sprite;
-				icon.rectTransform.sizeDelta = new Vector2(sprite.rect.width, sprite.rect.height);
+				icon.rectTransform.sizeDelta = new Vector2(sprite.rect.width, sprite.rect.height) * GearSwitcherIconScale;
 			}
 			else
 			{
-				icon.rectTransform.sizeDelta = new Vector2(44f, 44f);
+				icon.rectTransform.sizeDelta = new Vector2(44f, 44f) * GearSwitcherIconScale;
 			}
 			ApplyGearSwitcherIconState(icon, glow, active, activeColor);
 		}
@@ -315,7 +319,7 @@ public sealed partial class QuickMenu : Module
 				return;
 			}
 			dashSlashSprite ??= LoadCollectorIconSprite("Dash Slash.png", "DashSlash");
-			ApplyGearSwitcherIcon(gearSwitcherDashSlashIcon, gearSwitcherDashSlashGlow, dashSlashSprite, GetSelectedNailArt("hasDashSlash"));
+			ApplyGearSwitcherIcon(gearSwitcherDashSlashIcon, gearSwitcherDashSlashGlow, dashSlashSprite, GetSelectedNailArt("hasUpwardSlash"));
 		}
 
 		private void UpdateGearSwitcherGreatSlashIcon()
@@ -325,7 +329,7 @@ public sealed partial class QuickMenu : Module
 				return;
 			}
 			greatSlashSprite ??= LoadCollectorIconSprite("Great Slash.png", "GreatSlash");
-			ApplyGearSwitcherIcon(gearSwitcherGreatSlashIcon, gearSwitcherGreatSlashGlow, greatSlashSprite, GetSelectedNailArt("hasUpwardSlash"));
+			ApplyGearSwitcherIcon(gearSwitcherGreatSlashIcon, gearSwitcherGreatSlashGlow, greatSlashSprite, GetSelectedNailArt("hasDashSlash"));
 		}
 
 		private void UpdateGearSwitcherCloakRowIcons()
@@ -438,7 +442,7 @@ public sealed partial class QuickMenu : Module
 				{
 					image.sprite = hpMaskSprite;
 				}
-				image.rectTransform.sizeDelta = new Vector2(44f, 44f);
+				image.rectTransform.sizeDelta = new Vector2(GearSwitcherSmallIconSize, GearSwitcherSmallIconSize);
 				ApplyGearSwitcherIconState(image, gearSwitcherHpMaskGlows[i], i < maxHealth);
 			}
 			UpdateGearSwitcherHpMaskRowScale();
@@ -464,7 +468,7 @@ public sealed partial class QuickMenu : Module
 				{
 					image.sprite = soulVesselSprite;
 				}
-				image.rectTransform.sizeDelta = new Vector2(44f, 44f);
+				image.rectTransform.sizeDelta = new Vector2(GearSwitcherSmallIconSize, GearSwitcherSmallIconSize);
 				ApplyGearSwitcherIconState(image, gearSwitcherSoulVesselGlows[i], i < num);
 			}
 			UpdateGearSwitcherSoulVesselRowScale();
@@ -486,7 +490,7 @@ public sealed partial class QuickMenu : Module
 			{
 				gearSwitcherNaillessIcon.sprite = naillessSprite;
 			}
-			gearSwitcherNaillessIcon.rectTransform.sizeDelta = new Vector2(88f, 88f);
+			gearSwitcherNaillessIcon.rectTransform.sizeDelta = new Vector2(GearSwitcherBigIconSize, GearSwitcherBigIconSize);
 			ApplyGearSwitcherIconState(gearSwitcherNaillessIcon, gearSwitcherNaillessGlow, GetSelectedNailless());
 		}
 
@@ -501,7 +505,7 @@ public sealed partial class QuickMenu : Module
 			{
 				gearSwitcherOvercharmedIcon.sprite = overcharmedSprite;
 			}
-			gearSwitcherOvercharmedIcon.rectTransform.sizeDelta = new Vector2(88f, 88f);
+			gearSwitcherOvercharmedIcon.rectTransform.sizeDelta = new Vector2(GearSwitcherBigIconSize, GearSwitcherBigIconSize);
 			ApplyGearSwitcherIconState(gearSwitcherOvercharmedIcon, gearSwitcherOvercharmedGlow, GetSelectedOvercharmed());
 		}
 
@@ -516,13 +520,13 @@ public sealed partial class QuickMenu : Module
 				if (charmsPromptSprite != null)
 				{
 					gearSwitcherCharmPromptIcon.sprite = charmsPromptSprite;
-					float num = 88f / charmsPromptSprite.rect.height;
+					float num = GearSwitcherBigIconSize / charmsPromptSprite.rect.height;
 					float x = charmsPromptSprite.rect.width * num;
-					gearSwitcherCharmPromptIcon.rectTransform.sizeDelta = new Vector2(x, 88f);
+					gearSwitcherCharmPromptIcon.rectTransform.sizeDelta = new Vector2(x, GearSwitcherBigIconSize);
 				}
 				else
 				{
-					gearSwitcherCharmPromptIcon.rectTransform.sizeDelta = new Vector2(88f, 88f);
+					gearSwitcherCharmPromptIcon.rectTransform.sizeDelta = new Vector2(GearSwitcherBigIconSize, GearSwitcherBigIconSize);
 				}
 				gearSwitcherCharmPromptIcon.color = GearSwitcherSpellActiveColor;
 			}

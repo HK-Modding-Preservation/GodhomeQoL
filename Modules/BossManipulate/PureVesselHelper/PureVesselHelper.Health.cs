@@ -66,6 +66,11 @@ public sealed partial class PureVesselHelper : Module
 
     private static void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || !IsPureVesselObject(boss))
         {
             return;

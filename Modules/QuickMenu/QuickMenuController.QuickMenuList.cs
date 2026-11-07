@@ -35,6 +35,7 @@ public sealed partial class QuickMenu : Module
                 new("MenuAnimationSkipping", "Categories/MenuAnimationSkipping".Localize(), OnQuickMenuAnimationClicked),
                 new("FreeMenu", GetFreeMenuLabel(), OnQuickFreeMenuClicked),
                 new("RenameMode", GetRenameModeLabel(), OnQuickRenameModeClicked),
+                new("SettingsPresets", "QuickMenu/Presets".Localize(), OnQuickSettingsPresetsClicked),
                 new("Settings", "QuickMenu/Settings".Localize(), OnQuickSettingsClicked)
             };
         }

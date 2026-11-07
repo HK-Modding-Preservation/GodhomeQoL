@@ -171,7 +171,8 @@ public sealed partial class RandomPantheons : Module
         "GG_Engine_Root",
         "GG_Spa",
         "GG_Gruz_Mother",
-        "GG_Gruz_Mother_V"
+        "GG_Gruz_Mother_V",
+        "GG_Crystal_Guardian"
     };
 
     private static readonly HashSet<string> InvalidLast = new(StringComparer.OrdinalIgnoreCase)

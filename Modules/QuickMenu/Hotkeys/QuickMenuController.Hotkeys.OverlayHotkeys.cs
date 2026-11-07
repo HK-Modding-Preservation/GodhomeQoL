@@ -126,7 +126,7 @@ public sealed partial class QuickMenu : Module
             bool clear = key == overlayHotkeyPrevKey;
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, GetOverlayHotkeyOwnerLabel(overlayHotkeyRebindId), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 if (quickSettingsHotkeyValues.TryGetValue(overlayHotkeyRebindId, out Text? text))
                 {
                     UpdateKeybindValue(text, "Settings/FastReload/SetKey".Localize());
@@ -196,7 +196,7 @@ public sealed partial class QuickMenu : Module
             bool clear = key == quickMenuPrevKey;
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, "Settings/QuickMenu/Hotkey".Localize(), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateQuickMenuHotkeyButton("Settings/FastReload/SetKey".Localize());
                 return;
             }
@@ -423,6 +423,8 @@ public sealed partial class QuickMenu : Module
             SetRandomPantheonsVisible(false);
             SetTrueBossRushVisible(false);
             SetCheatsVisible(false);
+            SetSettingsPresetsVisible(false);
+            SetBossHistoryVisible(false);
             SetAlwaysFuriousVisible(false);
             SetGearSwitcherVisible(false);
             SetGearSwitcherCharmCostVisible(false);

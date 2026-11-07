@@ -17,7 +17,6 @@ public sealed class FreezeHitboxes : Module
     private static int pendingHitBaselineTotalHealth = -1;
     private static int pendingHitFrame;
     private static int lastTakeHealthBaselineTotalHealth = -1;
-    private static int lastObservedTotalHealth = -1;
     private static FreezeHitboxesViewer? hitboxViewer;
 
     private static void ResetPendingHitState()
@@ -27,7 +26,6 @@ public sealed class FreezeHitboxes : Module
         pendingHitBaselineTotalHealth = -1;
         pendingHitFrame = 0;
         lastTakeHealthBaselineTotalHealth = -1;
-        lastObservedTotalHealth = -1;
     }
 
     internal static bool GetEnabled() => Settings.Enabled;
@@ -62,6 +60,7 @@ public sealed class FreezeHitboxes : Module
         ModHooks.HeroUpdateHook += OnHeroUpdate;
         On.InputHandler.OnGUI += OnInputHandlerOnGUI;
         On.HeroController.Die += OnHeroDie;
+        FreezeHitSource.Hook();
     }
 
     private protected override void Unload()
@@ -72,6 +71,7 @@ public sealed class FreezeHitboxes : Module
         ModHooks.HeroUpdateHook -= OnHeroUpdate;
         On.InputHandler.OnGUI -= OnInputHandlerOnGUI;
         On.HeroController.Die -= OnHeroDie;
+        FreezeHitSource.Unhook();
         ResetPendingHitState();
         EndFreeze();
     }
@@ -144,6 +144,11 @@ public sealed class FreezeHitboxes : Module
 
         if (freezeActive)
         {
+            if (newTimeScale > 0.01f)
+            {
+                storedGenericTimeScale = newTimeScale;
+            }
+
             TimeController.GenericTimeScale = 0f;
             return;
         }
@@ -242,31 +247,6 @@ public sealed class FreezeHitboxes : Module
             return;
         }
 
-        if (Settings.AnyHits && !freezeActive)
-        {
-            if (IsDeathOrRespawnState(ignoreControlReqlinquished: true))
-            {
-                lastObservedTotalHealth = -1;
-            }
-            else
-            {
-                int currentTotalHealth = GetTotalHealth();
-                if (currentTotalHealth >= 0)
-                {
-                    if (lastObservedTotalHealth >= 0 && currentTotalHealth < lastObservedTotalHealth)
-                    {
-                        StartFreeze();
-                    }
-
-                    lastObservedTotalHealth = currentTotalHealth;
-                }
-            }
-        }
-        else
-        {
-            lastObservedTotalHealth = -1;
-        }
-
         if (!pendingHitFreeze || freezeActive || !Settings.AnyHits)
         {
             return;
@@ -343,24 +323,15 @@ public sealed class FreezeHitboxes : Module
 
     private static IEnumerator OnHeroDie(On.HeroController.orig_Die orig, HeroController self)
     {
-        IEnumerator origEnum = orig(self);
-        if (Settings.Enabled && !freezeActive && !Settings.AnyHits)
-        {
-            _ = self.StartCoroutine(FreezeNextFrame());
-        }
-
-        while (origEnum.MoveNext())
-        {
-            yield return origEnum.Current;
-        }
-    }
-
-    private static IEnumerator FreezeNextFrame()
-    {
-        yield return null;
         if (Settings.Enabled && !freezeActive && !Settings.AnyHits)
         {
             StartFreeze();
+        }
+
+        IEnumerator origEnum = orig(self);
+        while (origEnum.MoveNext())
+        {
+            yield return origEnum.Current;
         }
     }
 
@@ -378,6 +349,7 @@ public sealed class FreezeHitboxes : Module
             : lastNonZeroGenericTimeScale;
 
         TimeController.GenericTimeScale = 0f;
+        FreezeHitSource.Freeze();
 
         EnsureViewer();
         hitboxViewer?.Load();
@@ -404,6 +376,7 @@ public sealed class FreezeHitboxes : Module
 
         TimeController.GenericTimeScale = storedGenericTimeScale;
         ResetPendingHitState();
+        FreezeHitSource.Clear();
 
         hitboxViewer?.Unload();
     }

@@ -6,6 +6,7 @@ internal sealed class FreezeHitboxesRender : MonoBehaviour
 
     private struct HitboxType : IComparable<HitboxType>
     {
+        public static readonly HitboxType KnightHurtbox = new(Color.white, -1);
         public static readonly HitboxType Knight = new(Color.yellow, 0);
         public static readonly HitboxType Enemy = new(new Color(0.8f, 0f, 0f), 1);
         public static readonly HitboxType Attack = new(Color.cyan, 2);
@@ -33,6 +34,7 @@ internal sealed class FreezeHitboxesRender : MonoBehaviour
 
     private readonly SortedDictionary<HitboxType, HashSet<Collider2D>> colliders = new()
     {
+        { HitboxType.KnightHurtbox, new HashSet<Collider2D>() },
         { HitboxType.Knight, new HashSet<Collider2D>() },
         { HitboxType.Enemy, new HashSet<Collider2D>() },
         { HitboxType.Attack, new HashSet<Collider2D>() },
@@ -79,7 +81,11 @@ internal sealed class FreezeHitboxesRender : MonoBehaviour
         if (collider2D is BoxCollider2D or PolygonCollider2D or EdgeCollider2D or CircleCollider2D)
         {
             GameObject go = collider2D.gameObject;
-            if (collider2D.GetComponent<DamageHero>() || collider2D.gameObject.LocateMyFSM("damages_hero"))
+            if (collider2D.GetComponent<global::HeroBox>() != null)
+            {
+                colliders[HitboxType.KnightHurtbox].Add(collider2D);
+            }
+            else if (collider2D.GetComponent<DamageHero>() || collider2D.gameObject.LocateMyFSM("damages_hero"))
             {
                 colliders[HitboxType.Enemy].Add(collider2D);
             }
@@ -144,6 +150,90 @@ internal sealed class FreezeHitboxesRender : MonoBehaviour
                 DrawHitbox(camera, collider2D, pair.Key, lineWidth);
             }
         }
+
+        DrawHitSource(camera, lineWidth);
+        DrawUnfreezeHint();
+    }
+
+    private static readonly Color HitSourceColor = new(1f, 0.15f, 0.85f);
+
+    private static void DrawHitSource(Camera camera, float lineWidth)
+    {
+        IReadOnlyList<FreezeHitSource.Shape> shapes = FreezeHitSource.Shapes;
+        if (shapes.Count == 0)
+        {
+            return;
+        }
+
+        int origDepth = GUI.depth;
+        GUI.depth = -2;
+        foreach (FreezeHitSource.Shape shape in shapes)
+        {
+            DrawWorldShape(camera, shape, Color.black, lineWidth * 4f);
+        }
+
+        foreach (FreezeHitSource.Shape shape in shapes)
+        {
+            DrawWorldShape(camera, shape, HitSourceColor, lineWidth * 2.5f);
+        }
+
+        GUI.depth = origDepth;
+    }
+
+    private static void DrawWorldShape(Camera camera, FreezeHitSource.Shape shape, Color color, float width)
+    {
+        Vector2[] points = shape.Points;
+        int count = shape.Closed ? points.Length : points.Length - 1;
+        for (int i = 0; i < count; i++)
+        {
+            FreezeHitboxesDrawing.DrawLine(WorldToGui(camera, points[i]), WorldToGui(camera, points[(i + 1) % points.Length]), color, width, true);
+        }
+    }
+
+    private static Vector2 WorldToGui(Camera camera, Vector2 world)
+    {
+        Vector3 screen = camera.WorldToScreenPoint(world);
+        return new Vector2((int)Math.Round(screen.x), (int)Math.Round(Screen.height - screen.y));
+    }
+
+    private GUIStyle? hintStyle;
+
+    private void DrawUnfreezeHint()
+    {
+        KeyCode key = FreezeHitboxes.GetUnfreezeKey();
+        string text = key != KeyCode.None
+            ? string.Format("FreezeHitboxes/HintKey".Localize(), key)
+            : string.Format("FreezeHitboxes/HintNoKey".Localize(), QuickMenu.GetQuickMenuHotkeyLabel());
+
+        int fontSize = Mathf.Max(14, Mathf.RoundToInt(Screen.height / 40f));
+        hintStyle ??= new GUIStyle(GUI.skin.label)
+        {
+            alignment = TextAnchor.UpperCenter,
+            fontStyle = FontStyle.Bold,
+            wordWrap = true
+        };
+        hintStyle.fontSize = fontSize;
+
+        Rect rect = new(0f, Screen.height * 0.06f, Screen.width, fontSize * 3f);
+        Rect shadow = new(rect.x + 2f, rect.y + 2f, rect.width, rect.height);
+        Color previous = GUI.color;
+        GUI.color = Color.black;
+        GUI.Label(shadow, text, hintStyle);
+        GUI.color = Color.white;
+        GUI.Label(rect, text, hintStyle);
+
+        string source = FreezeHitSource.Name;
+        if (!string.IsNullOrEmpty(source))
+        {
+            string hitText = string.Format("FreezeHitboxes/HitBy".Localize(), source);
+            Rect hitRect = new(0f, rect.y + (fontSize * 2.2f), Screen.width, fontSize * 2f);
+            GUI.color = Color.black;
+            GUI.Label(new Rect(hitRect.x + 2f, hitRect.y + 2f, hitRect.width, hitRect.height), hitText, hintStyle);
+            GUI.color = HitSourceColor;
+            GUI.Label(hitRect, hitText, hintStyle);
+        }
+
+        GUI.color = previous;
     }
 
     private void CleanupDestroyedCollidersIfNeeded()

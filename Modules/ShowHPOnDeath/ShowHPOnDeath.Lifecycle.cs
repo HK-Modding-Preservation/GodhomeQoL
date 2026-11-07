@@ -37,6 +37,7 @@ public sealed partial class ShowHPOnDeath : Module
     {
         activeInstance = this;
         runtimeHooksInstalled = false;
+        InstallHistoryHooks();
         if (Settings.EnabledMod)
         {
             InstallRuntimeHooks();
@@ -50,6 +51,7 @@ public sealed partial class ShowHPOnDeath : Module
     private protected override void Unload()
     {
         RemoveRuntimeHooks();
+        RemoveHistoryHooks();
         ClearRuntimeState(clearLastDisplay: true);
 
         if (ShowHPOnDeathDisplay.Instance != null)
@@ -73,6 +75,9 @@ public sealed partial class ShowHPOnDeath : Module
         ModHooks.BeforeSceneLoadHook += BeforeSceneLoad;
         ModHooks.HeroUpdateHook += OnHeroUpdate;
         ModHooks.AfterPlayerDeadHook += OnPlayerDead;
+        On.HeroController.Die += OnHeroDie;
+        On.HealthManager.Die += OnHealthManagerDie;
+        On.BossSceneController.EndBossScene += OnEndBossScene;
         runtimeHooksInstalled = true;
     }
 
@@ -88,6 +93,9 @@ public sealed partial class ShowHPOnDeath : Module
         ModHooks.BeforeSceneLoadHook -= BeforeSceneLoad;
         ModHooks.HeroUpdateHook -= OnHeroUpdate;
         ModHooks.AfterPlayerDeadHook -= OnPlayerDead;
+        On.HeroController.Die -= OnHeroDie;
+        On.HealthManager.Die -= OnHealthManagerDie;
+        On.BossSceneController.EndBossScene -= OnEndBossScene;
         runtimeHooksInstalled = false;
     }
 

@@ -1,17 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Change this to the path of your modded HK installation -->
     <HollowKnightRefs>C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\</HollowKnightRefs>
-    <!-- Root folder of the HK install (computed from HollowKnightRefs) -->
     <GameRootDir>$(HollowKnightRefs)..\..\</GameRootDir>
-    <!-- Mods folder used by Modding API 1.5+ -->
     <GameModsDir>$(GameRootDir)Mods\</GameModsDir>
-    <!-- Mods folder inside Managed (requested by user for hot copy) -->
     <ManagedModsDir>$(HollowKnightRefs)Mods\</ManagedModsDir>
     <ManagedModsTargetDir>$(ManagedModsDir)$(AssemblyName)\</ManagedModsTargetDir>
-    <!-- Change this to the path where you want the ready-to-upload exports to be -->
     <ExportDir>C:\Users\User\Documents\HKModsExport</ExportDir>
-    <!-- Ensure Visual Studio always runs MSBuild so CopyMod executes -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <PropertyGroup>
@@ -19,15 +13,14 @@
     <AssemblyName>GodhomeQoL</AssemblyName>
     <Nullable>enable</Nullable>
     <TargetFramework>net472</TargetFramework>
-    <!-- Ensure weaving also runs for Compile-only invocations so obj/bin stay consistent -->
     <FodyAfterTargets>Compile</FodyAfterTargets>
     <AssemblyTitle>GodhomeQoL</AssemblyTitle>
     <Product>GodhomeQoL</Product>
     <Description>A Hollow Knight Mod</Description>
     <Copyright>Copyright c  2025</Copyright>
-    <AssemblyVersion>1.0.1.4</AssemblyVersion>
-    <FileVersion>1.0.1.4</FileVersion>
-    <InformationalVersion>1.0.1.4</InformationalVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <InformationalVersion>2.0.0.0</InformationalVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
@@ -64,13 +57,10 @@
     </GetFileHash>
     <WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)');$(OutputZipString);@(ZipFilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
 
-    <!-- Keep intermediate assembly synchronized with final output to avoid accidental deployment of stale obj DLL -->
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(IntermediateOutputPath)$(TargetName).dll" OverwriteReadOnlyFiles="true" />
     <Copy Condition="Exists('$(TargetDir)$(TargetName).pdb')" SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFiles="$(IntermediateOutputPath)$(TargetName).pdb" OverwriteReadOnlyFiles="true" />
   </Target>
   <ItemGroup>
-    <Compile Remove="ToggleableBindings\UI\BindingsUIController.cs" />
-    <Compile Remove="Compatibility\*.cs" />
     <None Remove="Resources\Lang\en.json" />
     <None Remove="Resources\Howling Wraiths.png" />
     <None Remove="Resources\Abyss Shriek.png" />

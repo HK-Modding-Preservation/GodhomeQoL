@@ -79,7 +79,7 @@ public sealed partial class QuickMenu : Module
 
             if (TryGetFastReloadHotkeyConflictOwners(key, out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(reloadKeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }
@@ -177,6 +177,11 @@ public sealed partial class QuickMenu : Module
                 if (string.Equals(GetShowHpBindingRaw(), mappedRaw, StringComparison.OrdinalIgnoreCase))
                 {
                     AddOwner("ShowHPOnDeath/HudToggleKey".Localize());
+                }
+
+                if (string.Equals(GetShowHpBindingRaw(ShowHpSettings.Keybinds.History), mappedRaw, StringComparison.OrdinalIgnoreCase))
+                {
+                    AddOwner("ShowHPOnDeath/HistoryKey".Localize());
                 }
 
                 if (string.Equals(GetFastDreamWarpKeyBindingRaw(), mappedRaw, StringComparison.OrdinalIgnoreCase))

@@ -28,6 +28,8 @@ public sealed partial class QuickMenu : Module
                 || gearSwitcherVisible
                 || gearSwitcherCharmCostVisible
                 || gearSwitcherPresetVisible
+                || settingsPresetsVisible
+                || bossHistoryVisible
                 || qolVisible
                 || menuAnimationVisible
                 || bossAnimationVisible
@@ -77,6 +79,8 @@ public sealed partial class QuickMenu : Module
                 SetRandomPantheonsVisible(false);
                 SetTrueBossRushVisible(false);
                 SetCheatsVisible(false);
+                SetSettingsPresetsVisible(false);
+                SetBossHistoryVisible(false);
                 SetAlwaysFuriousVisible(false);
                 SetGearSwitcherVisible(false);
                 SetGearSwitcherCharmCostVisible(false);
@@ -149,6 +153,7 @@ public sealed partial class QuickMenu : Module
                 ApplyQuickMenuLayout();
                 UpdateFreeMenuLabel();
                 UpdateRenameModeLabel();
+                UpdateQuickMenuEntryStateColors();
 
                 if (quickPanelGroup != null)
                 {
@@ -225,6 +230,7 @@ public sealed partial class QuickMenu : Module
                 DisableCursorHook();
                 RestoreUiInteraction();
                 TryRestoreSelectionAfterQuickMenuClose();
+                gamepadReleasePending = gamepadMode;
                 uiActive = false;
             }
         }

@@ -88,20 +88,27 @@ public sealed partial class CollectorPhases : Module
             orig(self);
             return;
         }
-        if (self.gameObject.name == "Jar Collector" && self.FsmName == "Phase Control")
+        try
         {
-            HandlePhaseControl(self);
+            if (self.gameObject.name == "Jar Collector" && self.FsmName == "Phase Control")
+            {
+                HandlePhaseControl(self);
+            }
+            else if (self.gameObject.name == "Jar Collector" && self.FsmName == "Control")
+            {
+                HandleControl(self);
+                SetCollectorSummonHp(self);
+                FilterCollectorSummonPool(self);
+                ApplySummonCounts(self);
+            }
+            else
+            {
+                TryGateSpawnerFSM(self.gameObject);
+            }
         }
-        else if (self.gameObject.name == "Jar Collector" && self.FsmName == "Control")
+        catch (Exception ex)
         {
-            HandleControl(self);
-            SetCollectorSummonHp(self);
-            FilterCollectorSummonPool(self);
-            ApplySummonCounts(self);
-        }
-        else
-        {
-            TryGateSpawnerFSM(self.gameObject);
+            LogSuppressed(ex, "CollectorPhases.Hooks.cs");
         }
 
         orig(self);

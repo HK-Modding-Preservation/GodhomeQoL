@@ -392,15 +392,17 @@ public sealed partial class QuickMenu : Module
             buttonRect.sizeDelta = new Vector2(QuickButtonWidth, QuickButtonHeight);
 
             Image buttonImage = buttonObj.AddComponent<Image>();
-            buttonImage.color = QuickMenuBaseColor;
+            ApplyHkChamferPlate(buttonImage, QuickMenuBaseColor);
+            AddHkPlateHover(buttonObj, buttonImage, QuickMenuBaseColor);
 
             GameObject fillObj = new GameObject("StateFill");
             fillObj.transform.SetParent(buttonObj.transform, false);
             RectTransform fillRect = fillObj.AddComponent<RectTransform>();
-            fillRect.anchorMin = Vector2.zero;
-            fillRect.anchorMax = Vector2.one;
-            fillRect.offsetMin = Vector2.zero;
-            fillRect.offsetMax = Vector2.zero;
+            fillRect.anchorMin = new Vector2(0f, 0.12f);
+            fillRect.anchorMax = new Vector2(0f, 0.88f);
+            fillRect.pivot = new Vector2(0f, 0.5f);
+            fillRect.anchoredPosition = new Vector2(6f, 0f);
+            fillRect.sizeDelta = new Vector2(5f, 0f);
 
             Image fillImage = fillObj.AddComponent<Image>();
             fillImage.color = new Color(0f, 0f, 0f, 0f);
@@ -409,6 +411,7 @@ public sealed partial class QuickMenu : Module
             Outline outline = buttonObj.AddComponent<Outline>();
             outline.effectColor = Color.white;
             outline.effectDistance = new Vector2(1f, -1f);
+            outline.enabled = false;
 
             Button button = buttonObj.AddComponent<Button>();
             button.transition = Selectable.Transition.None;
@@ -421,6 +424,10 @@ public sealed partial class QuickMenu : Module
             textRect.anchorMax = Vector2.one;
             textRect.offsetMin = Vector2.zero;
             textRect.offsetMax = Vector2.zero;
+            StyleHkQuickEntryText(text);
+            text.color = HkQuickEntryTextColor;
+            CreateHkQuickEntryFrame(buttonObj.transform);
+            CreateHkQuickEntryStateDot(buttonObj.transform);
 
             QuickMenuEntry entry = new(definition.Id, rowRect, button, text, definition.Label);
             QuickMenuDragHandle dragHandle = handleObj.AddComponent<QuickMenuDragHandle>();
@@ -450,7 +457,7 @@ public sealed partial class QuickMenu : Module
             }
 
             Color targetColor = enabled ? QuickMenuZoteEnabledColor : QuickMenuZoteDisabledColor;
-            image.color = QuickMenuBaseColor;
+            ApplyHkQuickEntryState(entry, image, enabled);
 
             Transform? fill = entry.Button.transform.Find("StateFill");
             if (fill != null && fill.TryGetComponent(out Image fillImage))
@@ -464,7 +471,7 @@ public sealed partial class QuickMenu : Module
                 outline.effectColor = Color.white;
                 outline.effectDistance = new Vector2(1f, -1f);
                 outline.useGraphicAlpha = true;
-                outline.enabled = true;
+                outline.enabled = false;
             }
         }
 

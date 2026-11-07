@@ -37,7 +37,7 @@ public sealed partial class QuickMenu : Module
             dialogRect.sizeDelta = new Vector2(740f, 340f);
 
             Image dialogImage = dialogObj.AddComponent<Image>();
-            dialogImage.color = OverlayPanelColor;
+            StyleHkDialog(dialogImage);
 
             Text label = CreateText(dialogObj.transform, "Label", "Do you really want to reset Other Rooms?", 24, TextAnchor.MiddleCenter);
             label.horizontalOverflow = HorizontalWrapMode.Wrap;

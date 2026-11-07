@@ -13,9 +13,16 @@ public sealed partial class QuickMenu : Module
 {
     private sealed partial class QuickMenuController
     {
+		private const float GearSwitcherCharmCostTopPadding = 74f;
+		private const float CharmNotchInfoY = 124f;
+		private const float CharmNotchInfoHeight = 30f;
+		private const float CharmCostIconY = 26f;
+		private const float CharmCostControlsY = -36f;
+		private const float CharmCostButtonOffset = 36f;
+
 		private Transform CreateGearSwitcherCharmCostsRow(Transform parent, string name, float y)
 		{
-			GameObject gameObject = CreateRow(parent, name, y, new Vector2(820f, 120f));
+			GameObject gameObject = CreateRow(parent, name, y, new Vector2(820f, GearSwitcherCharmCostRowHeight));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
 			return gameObject.transform;
@@ -23,7 +30,7 @@ public sealed partial class QuickMenu : Module
 
 		private float CharmCostColumnX(int index)
 		{
-			return -260f + 130f * (float)index;
+			return -300f + 150f * (float)index;
 		}
 
 		private Image CreateCharmCostColumn(Transform parent, string name, float columnCenterX, string spriteName, string spriteKey, ref Text? valueField, Action<int> adjustCost, Action? iconClick = null, bool allowAdjust = true)
@@ -34,7 +41,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
 			rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 			rectTransform.pivot = new Vector2(0.5f, 0.5f);
-			rectTransform.anchoredPosition = new Vector2(columnCenterX, 16f);
+			rectTransform.anchoredPosition = new Vector2(columnCenterX, CharmCostIconY);
 			rectTransform.sizeDelta = new Vector2(44f, 44f);
 			Image image = gameObject.AddComponent<Image>();
 			image.preserveAspect = true;
@@ -47,7 +54,7 @@ public sealed partial class QuickMenu : Module
 			if (sprite != null)
 			{
 				image.sprite = sprite;
-				float num = Mathf.Min(1.4f, 64f / sprite.rect.height);
+				float num = Mathf.Min(1.4f, 56f / sprite.rect.height);
 				rectTransform.sizeDelta = new Vector2(sprite.rect.width * num, sprite.rect.height * num);
 			}
 			if (GearSwitcher.TryGetCharmId(spriteKey, out int charmId))
@@ -74,7 +81,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform2.anchorMin = new Vector2(0.5f, 0.5f);
 			rectTransform2.anchorMax = new Vector2(0.5f, 0.5f);
 			rectTransform2.pivot = new Vector2(0.5f, 0.5f);
-			rectTransform2.anchoredPosition = new Vector2(columnCenterX, -24f);
+			rectTransform2.anchoredPosition = new Vector2(columnCenterX, CharmCostControlsY);
 			rectTransform2.sizeDelta = new Vector2(40f, 44f);
 			Text text = CreateText(gameObject2.transform, "Value", "1", 22, TextAnchor.MiddleCenter);
 			RectTransform rectTransform3 = text.rectTransform;
@@ -85,12 +92,12 @@ public sealed partial class QuickMenu : Module
 			valueField = text;
 			if (allowAdjust)
 			{
-				Button button2 = CreateCenteredMiniButton(parent, name + "Minus", "-", new Vector2(columnCenterX - 22f, -24f));
+				Button button2 = CreateCenteredMiniButton(parent, name + "Minus", "-", new Vector2(columnCenterX - CharmCostButtonOffset, CharmCostControlsY));
 				button2.onClick.AddListener(delegate
 				{
 					adjustCost(-1);
 				});
-				Button button3 = CreateCenteredMiniButton(parent, name + "Plus", "+", new Vector2(columnCenterX + 22f, -24f));
+				Button button3 = CreateCenteredMiniButton(parent, name + "Plus", "+", new Vector2(columnCenterX + CharmCostButtonOffset, CharmCostControlsY));
 				button3.onClick.AddListener(delegate
 				{
 					adjustCost(1);
@@ -134,13 +141,13 @@ public sealed partial class QuickMenu : Module
 
 		private void CreateCharmCostAdjustButtons(Transform parent, string name, float columnCenterX, Action<int> adjustCost)
 		{
-			Button button = CreateCenteredMiniButton(parent, name + "Minus", "-", new Vector2(columnCenterX - 22f, -24f));
+			Button button = CreateCenteredMiniButton(parent, name + "Minus", "-", new Vector2(columnCenterX - CharmCostButtonOffset, CharmCostControlsY));
 			button.onClick.AddListener(delegate
 			{
 				adjustCost(-1);
 			});
 			button.transform.SetAsLastSibling();
-			Button button2 = CreateCenteredMiniButton(parent, name + "Plus", "+", new Vector2(columnCenterX + 22f, -24f));
+			Button button2 = CreateCenteredMiniButton(parent, name + "Plus", "+", new Vector2(columnCenterX + CharmCostButtonOffset, CharmCostControlsY));
 			button2.onClick.AddListener(delegate
 			{
 				adjustCost(1);
@@ -294,16 +301,11 @@ public sealed partial class QuickMenu : Module
 				label.color = GearSwitcherCharmPickMessageColor;
 				return;
 			}
-			if (IsBuiltinPresetName(gearSwitcherSelectedPreset))
-			{
-				label.text = "Charms: own gears only";
-				label.color = new Color(1f, 1f, 1f, 0.6f);
-				return;
-			}
 			int used = GearSwitcher.GetPlannedNotchesUsed(preset);
 			int slots = GearSwitcher.GetPresetNotchSlots(preset);
 			bool overcharmed = used > slots;
-			label.text = overcharmed ? $"Notches {used}/{slots} (Overcharmed)" : $"Notches {used}/{slots}";
+			string temporary = IsBuiltinPresetName(gearSwitcherSelectedPreset) ? " - temporary, resets when you switch gear" : string.Empty;
+			label.text = (overcharmed ? $"Notches {used}/{slots} (Overcharmed)" : $"Notches {used}/{slots}") + temporary;
 			label.color = overcharmed ? GearSwitcherCharmPickMessageColor : Color.white;
 		}
 
@@ -322,13 +324,18 @@ public sealed partial class QuickMenu : Module
 			{
 				return null;
 			}
-			Text text = CreateText(panel, "CharmNotchInfo", string.Empty, 24, TextAnchor.MiddleRight);
+			Text text = CreateText(panel, "CharmNotchInfo", string.Empty, 24, TextAnchor.MiddleCenter);
+			text.resizeTextForBestFit = true;
+			text.resizeTextMaxSize = 24;
+			text.resizeTextMinSize = 16;
+			text.horizontalOverflow = HorizontalWrapMode.Wrap;
+			text.verticalOverflow = VerticalWrapMode.Truncate;
 			RectTransform rectTransform = text.rectTransform;
 			rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
 			rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 			rectTransform.pivot = new Vector2(0.5f, 0.5f);
-			rectTransform.anchoredPosition = new Vector2(300f, 210f);
-			rectTransform.sizeDelta = new Vector2(320f, 40f);
+			rectTransform.anchoredPosition = new Vector2(0f, CharmNotchInfoY);
+			rectTransform.sizeDelta = new Vector2(760f, CharmNotchInfoHeight);
 			gearSwitcherCharmNotchText = text;
 			return text;
 		}
@@ -466,7 +473,7 @@ public sealed partial class QuickMenu : Module
 				if (sprite != null)
 				{
 					gearSwitcherVoidHeartIcon.sprite = sprite;
-					float num = Mathf.Min(1.4f, 64f / sprite.rect.height);
+					float num = Mathf.Min(1.4f, 56f / sprite.rect.height);
 					gearSwitcherVoidHeartIcon.rectTransform.sizeDelta = new Vector2(sprite.rect.width * num, sprite.rect.height * num);
 				}
 				else
@@ -493,7 +500,7 @@ public sealed partial class QuickMenu : Module
 				if (sprite != null)
 				{
 					gearSwitcherCarefreeIcon.sprite = sprite;
-					float num = Mathf.Min(1.4f, 64f / sprite.rect.height);
+					float num = Mathf.Min(1.4f, 56f / sprite.rect.height);
 					gearSwitcherCarefreeIcon.rectTransform.sizeDelta = new Vector2(sprite.rect.width * num, sprite.rect.height * num);
 				}
 				else

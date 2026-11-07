@@ -109,6 +109,11 @@ public abstract partial class UumuuHelperBase : Module
 
     private protected void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || !IsBossObject(boss))
         {
             return;
@@ -132,6 +137,11 @@ public abstract partial class UumuuHelperBase : Module
 
     private protected void RestoreVanillaSummonHealth(GameObject summon, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (summon == null || !IsBossSummonObject(summon))
         {
             return;

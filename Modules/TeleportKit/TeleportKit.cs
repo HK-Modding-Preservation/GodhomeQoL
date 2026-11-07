@@ -84,27 +84,27 @@ public sealed class TeleportKit : Module
 
         if (key == KeyCode.None)
         {
-            failureReason = "недоступен для этой привязки";
+            failureReason = "TeleportKit/KeyUnavailable".Localize();
             return false;
         }
 
         if ((slot == HotkeySlot.SaveTeleport || slot == HotkeySlot.Teleport)
             && (key == KeyCode.LeftControl || key == KeyCode.RightControl))
         {
-            failureReason = "недоступен для этой привязки";
+            failureReason = "TeleportKit/KeyUnavailable".Localize();
             return false;
         }
 
         string selfOwner = GetOwnerLabel(slot);
         if (QuickMenu.TryGetHotkeyConflictOwnersExceptSelf(key, selfOwner, out string conflictOwners))
         {
-            failureReason = $"занят: {conflictOwners}";
+            failureReason = string.Format("TeleportKit/KeyInUse".Localize(), conflictOwners);
             return false;
         }
 
         if (TryGetInternalConflictOwners(slot, key, out string internalOwners))
         {
-            failureReason = $"конфликтует с {internalOwners}";
+            failureReason = string.Format("TeleportKit/KeyConflict".Localize(), internalOwners);
             return false;
         }
 

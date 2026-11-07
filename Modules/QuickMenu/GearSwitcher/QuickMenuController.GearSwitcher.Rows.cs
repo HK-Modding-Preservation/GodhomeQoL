@@ -13,14 +13,24 @@ public sealed partial class QuickMenu : Module
 {
     private sealed partial class QuickMenuController
     {
+		private const float GearSwitcherGroupFrameHeight = 72f;
+		private const float GearSwitcherFirstGroupSpacing = 72f;
+		private const float GearSwitcherGroupSpacing = 82f;
+		private const float GearSwitcherHpSoulSpacing = 54f;
+		private const float GearSwitcherAfterGroupsSpacing = 70f;
+		private const float GearSwitcherPromptSpacing = 98f;
+		private const float GearSwitcherBigIconFrameHeight = 80f;
+		private const float GearSwitcherBigIconFrameY = -24f;
+
 		private void CreateGearSwitcherSpellsRow(Transform parent, float y)
 		{
 			GameObject gameObject = CreateRow(parent, "GearSwitcherSpellsRow", y, new Vector2(820f, 44f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
-			CreateGearSwitcherSpellIcon(gameObject.transform, "FireballIcon", -73f, "fireballLevel", UpdateGearSwitcherFireballIcon, out gearSwitcherFireballIcon, out gearSwitcherFireballGlow);
+			AddHkGroupFrame(gameObject.transform, 270f, GearSwitcherGroupFrameHeight, 0f);
+			CreateGearSwitcherSpellIcon(gameObject.transform, "FireballIcon", -90f, "fireballLevel", UpdateGearSwitcherFireballIcon, out gearSwitcherFireballIcon, out gearSwitcherFireballGlow);
 			CreateGearSwitcherSpellIcon(gameObject.transform, "QuakeIcon", 0f, "quakeLevel", UpdateGearSwitcherQuakeIcon, out gearSwitcherQuakeIcon, out gearSwitcherQuakeGlow);
-			CreateGearSwitcherSpellIcon(gameObject.transform, "ScreamIcon", 70f, "screamLevel", UpdateGearSwitcherScreamIcon, out gearSwitcherScreamIcon, out gearSwitcherScreamGlow);
+			CreateGearSwitcherSpellIcon(gameObject.transform, "ScreamIcon", 90f, "screamLevel", UpdateGearSwitcherScreamIcon, out gearSwitcherScreamIcon, out gearSwitcherScreamGlow);
 			UpdateGearSwitcherFireballIcon();
 			UpdateGearSwitcherQuakeIcon();
 			UpdateGearSwitcherScreamIcon();
@@ -31,9 +41,10 @@ public sealed partial class QuickMenu : Module
 			GameObject gameObject = CreateRow(parent, "GearSwitcherNailArtsRow", y, new Vector2(820f, 44f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
-			CreateGearSwitcherNailArtIcon(gameObject.transform, "CycloneSlashIcon", -70f, "hasCyclone", UpdateGearSwitcherCycloneIcon, out gearSwitcherCycloneIcon, out gearSwitcherCycloneGlow);
-			CreateGearSwitcherNailArtIcon(gameObject.transform, "DashSlashIcon", 0f, "hasDashSlash", UpdateGearSwitcherDashSlashIcon, out gearSwitcherDashSlashIcon, out gearSwitcherDashSlashGlow);
-			CreateGearSwitcherNailArtIcon(gameObject.transform, "GreatSlashIcon", 70f, "hasUpwardSlash", UpdateGearSwitcherGreatSlashIcon, out gearSwitcherGreatSlashIcon, out gearSwitcherGreatSlashGlow);
+			AddHkGroupFrame(gameObject.transform, 270f, GearSwitcherGroupFrameHeight, 0f);
+			CreateGearSwitcherNailArtIcon(gameObject.transform, "CycloneSlashIcon", -90f, "hasCyclone", UpdateGearSwitcherCycloneIcon, out gearSwitcherCycloneIcon, out gearSwitcherCycloneGlow);
+			CreateGearSwitcherNailArtIcon(gameObject.transform, "DashSlashIcon", 0f, "hasUpwardSlash", UpdateGearSwitcherDashSlashIcon, out gearSwitcherDashSlashIcon, out gearSwitcherDashSlashGlow);
+			CreateGearSwitcherNailArtIcon(gameObject.transform, "GreatSlashIcon", 90f, "hasDashSlash", UpdateGearSwitcherGreatSlashIcon, out gearSwitcherGreatSlashIcon, out gearSwitcherGreatSlashGlow);
 			UpdateGearSwitcherCycloneIcon();
 			UpdateGearSwitcherDashSlashIcon();
 			UpdateGearSwitcherGreatSlashIcon();
@@ -44,14 +55,15 @@ public sealed partial class QuickMenu : Module
 			GameObject gameObject = CreateRow(parent, "GearSwitcherCloakRow", y, new Vector2(820f, 44f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
+			AddHkGroupFrame(gameObject.transform, 610f, GearSwitcherGroupFrameHeight, 0f);
 			gearSwitcherCloakRowIconRects.Clear();
-			CreateGearSwitcherCloakIcon(gameObject.transform, -210f);
-			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "MantisClawIcon", -140f, "Walljump", out gearSwitcherMantisClawIcon, out gearSwitcherMantisClawGlow);
-			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "MonarchWingsIcon", -70f, "DoubleJump", out gearSwitcherMonarchWingsIcon, out gearSwitcherMonarchWingsGlow);
+			CreateGearSwitcherCloakIcon(gameObject.transform, -264f);
+			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "MantisClawIcon", -176f, "Walljump", out gearSwitcherMantisClawIcon, out gearSwitcherMantisClawGlow);
+			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "MonarchWingsIcon", -88f, "DoubleJump", out gearSwitcherMonarchWingsIcon, out gearSwitcherMonarchWingsGlow);
 			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "CrystalHeartIcon", 0f, "SuperDash", out gearSwitcherCrystalHeartIcon, out gearSwitcherCrystalHeartGlow);
-			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "IsmasTearIcon", 70f, "AcidArmour", out gearSwitcherIsmasTearIcon, out gearSwitcherIsmasTearGlow);
-			CreateGearSwitcherDreamNailIcon(gameObject.transform, 140f);
-			CreateGearSwitcherDreamgateIcon(gameObject.transform, 210f);
+			CreateGearSwitcherMoveAbilityIcon(gameObject.transform, "IsmasTearIcon", 88f, "AcidArmour", out gearSwitcherIsmasTearIcon, out gearSwitcherIsmasTearGlow);
+			CreateGearSwitcherDreamNailIcon(gameObject.transform, 176f);
+			CreateGearSwitcherDreamgateIcon(gameObject.transform, 264f);
 			UpdateGearSwitcherCloakRowIcons();
 		}
 
@@ -60,11 +72,12 @@ public sealed partial class QuickMenu : Module
 			GameObject gameObject = CreateRow(parent, "GearSwitcherBindingsRow", y, new Vector2(820f, 44f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
+			AddHkGroupFrame(gameObject.transform, 340f, GearSwitcherGroupFrameHeight, 0f);
 			gearSwitcherBindingsRowIconRects.Clear();
-			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingNailIcon", -105f, "NailBinding", out gearSwitcherBindingNailIcon, out gearSwitcherBindingNailGlow);
-			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingShellIcon", -35f, "ShellBinding", out gearSwitcherBindingShellIcon, out gearSwitcherBindingShellGlow);
-			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingCharmsIcon", 35f, "CharmsBinding", out gearSwitcherBindingCharmsIcon, out gearSwitcherBindingCharmsGlow);
-			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingSoulIcon", 105f, "SoulBinding", out gearSwitcherBindingSoulIcon, out gearSwitcherBindingSoulGlow);
+			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingNailIcon", -132f, "NailBinding", out gearSwitcherBindingNailIcon, out gearSwitcherBindingNailGlow);
+			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingShellIcon", -44f, "ShellBinding", out gearSwitcherBindingShellIcon, out gearSwitcherBindingShellGlow);
+			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingCharmsIcon", 44f, "CharmsBinding", out gearSwitcherBindingCharmsIcon, out gearSwitcherBindingCharmsGlow);
+			CreateGearSwitcherBindingIcon(gameObject.transform, "BindingSoulIcon", 132f, "SoulBinding", out gearSwitcherBindingSoulIcon, out gearSwitcherBindingSoulGlow);
 			UpdateGearSwitcherBindingsRowIcons();
 		}
 
@@ -73,12 +86,13 @@ public sealed partial class QuickMenu : Module
 			GameObject gameObject = CreateRow(parent, "GearSwitcherHpMaskRow", y, new Vector2(820f, 44f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
+			AddHkGroupFrame(gameObject.transform, 600f, GearSwitcherGroupFrameHeight + GearSwitcherHpSoulSpacing, -GearSwitcherHpSoulSpacing * 0.5f);
 			gearSwitcherHpMaskIcons.Clear();
 			gearSwitcherHpMaskGlows.Clear();
 			gearSwitcherHpMaskIconRects.Clear();
 			for (int i = 0; i < 9; i++)
 			{
-				CreateGearSwitcherHpMaskIcon(gameObject.transform, (float)(i - 4) * 50f, i + 1);
+				CreateGearSwitcherHpMaskIcon(gameObject.transform, (float)(i - 4) * 62f, i + 1);
 			}
 			UpdateGearSwitcherHpMaskIcons();
 		}
@@ -93,7 +107,7 @@ public sealed partial class QuickMenu : Module
 			gearSwitcherSoulVesselIconRects.Clear();
 			for (int i = 0; i < 3; i++)
 			{
-				CreateGearSwitcherSoulVesselIcon(gameObject.transform, (float)(i - 1) * 60f, i + 1);
+				CreateGearSwitcherSoulVesselIcon(gameObject.transform, (float)(i - 1) * 78f, i + 1);
 			}
 			UpdateGearSwitcherSoulVesselIcons();
 		}
@@ -103,6 +117,7 @@ public sealed partial class QuickMenu : Module
 			GameObject gameObject = CreateRow(parent, "GearSwitcherNaillessRow", y, new Vector2(820f, 44f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
+			AddHkGroupFrame(gameObject.transform, 220f, GearSwitcherBigIconFrameHeight, GearSwitcherBigIconFrameY);
 			GameObject gameObject2 = new GameObject("NaillessIcon");
 			gameObject2.transform.SetParent(gameObject.transform, worldPositionStays: false);
 			RectTransform rectTransform = gameObject2.AddComponent<RectTransform>();
@@ -110,7 +125,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 			rectTransform.pivot = new Vector2(0.5f, 0.5f);
 			rectTransform.anchoredPosition = new Vector2(-50f, -24f);
-			rectTransform.sizeDelta = new Vector2(88f, 88f);
+			rectTransform.sizeDelta = new Vector2(GearSwitcherBigIconSize, GearSwitcherBigIconSize);
 			Image image2 = gameObject2.AddComponent<Image>();
 			image2.preserveAspect = true;
 			Outline outline = gameObject2.AddComponent<Outline>();
@@ -137,7 +152,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform2.anchorMax = new Vector2(0.5f, 0.5f);
 			rectTransform2.pivot = new Vector2(0.5f, 0.5f);
 			rectTransform2.anchoredPosition = new Vector2(50f, -24f);
-			rectTransform2.sizeDelta = new Vector2(88f, 88f);
+			rectTransform2.sizeDelta = new Vector2(GearSwitcherBigIconSize, GearSwitcherBigIconSize);
 			Image image3 = gameObject3.AddComponent<Image>();
 			image3.preserveAspect = true;
 			Outline outline2 = gameObject3.AddComponent<Outline>();
@@ -164,6 +179,7 @@ public sealed partial class QuickMenu : Module
 			GameObject gameObject = CreateRow(parent, "GearSwitcherCharmPromptRow", y, new Vector2(820f, 88f));
 			Image image = gameObject.AddComponent<Image>();
 			image.color = new Color(0f, 0f, 0f, 0f);
+			AddHkGroupFrame(gameObject.transform, 120f, GearSwitcherBigIconFrameHeight, GearSwitcherBigIconFrameY);
 			GameObject gameObject2 = new GameObject("CharmsPromptIcon");
 			gameObject2.transform.SetParent(gameObject.transform, worldPositionStays: false);
 			RectTransform rectTransform = gameObject2.AddComponent<RectTransform>();
@@ -171,7 +187,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
 			rectTransform.pivot = new Vector2(0.5f, 0.5f);
 			rectTransform.anchoredPosition = new Vector2(0f, -24f);
-			rectTransform.sizeDelta = new Vector2(88f, 88f);
+			rectTransform.sizeDelta = new Vector2(GearSwitcherBigIconSize, GearSwitcherBigIconSize);
 			Image image2 = gameObject2.AddComponent<Image>();
 			image2.preserveAspect = true;
 			Button button = gameObject2.AddComponent<Button>();

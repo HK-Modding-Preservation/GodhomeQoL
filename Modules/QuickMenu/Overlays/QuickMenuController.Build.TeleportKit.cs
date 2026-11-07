@@ -67,6 +67,19 @@ public sealed partial class QuickMenu : Module
 
             lastY = rowY;
             rowY += RowSpacing;
+            CreateKeybindRow(
+                content,
+                "TeleportKitGamepadButtonRow",
+                "TeleportKit/GamepadButton".Localize(),
+                rowY,
+                GetTeleportKitControllerButtonLabel,
+                StartTeleportKitControllerRebind,
+                out Text teleportGamepadValue
+            );
+            teleportKitControllerButtonValue = teleportGamepadValue;
+
+            lastY = rowY;
+            rowY += RowSpacing;
 
             SetScrollContentHeight(content, viewHeight, lastY, RowHeight);
             CreateButtonRow(panel.transform, "TeleportKitResetRow", "TeleportKit/Reset".Localize(), resetY, OnTeleportKitResetDefaultsClicked);

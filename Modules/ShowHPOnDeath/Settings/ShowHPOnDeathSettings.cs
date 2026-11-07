@@ -18,9 +18,11 @@ public sealed class ShowHPOnDeathSettings
 public sealed class ShowHPOnDeathKeyBinds : PlayerActionSet
 {
     public PlayerAction Hide;
+    public PlayerAction History;
 
     public ShowHPOnDeathKeyBinds()
     {
         Hide = CreatePlayerAction("Hide");
+        History = CreatePlayerAction("History");
     }
 }

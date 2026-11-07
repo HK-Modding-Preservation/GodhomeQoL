@@ -79,7 +79,7 @@ public sealed partial class QuickMenu : Module
 
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, "Settings/Cheats/KillAllHotkey".Localize(), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(cheatsKillAllHotkeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }

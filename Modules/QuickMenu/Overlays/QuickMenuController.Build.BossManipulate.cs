@@ -49,9 +49,10 @@ public sealed partial class QuickMenu : Module
             panelRect.sizeDelta = new Vector2(BossManipulatePanelWidth, BossManipulatePanelHeight);
 
             Image panelImage = panel.AddComponent<Image>();
-            panelImage.color = OverlayPanelColor;
+            StyleHkPanel(panelImage);
 
             Text title = CreateText(panel.transform, "Title", "Categories/BossManipulate".Localize(), 52, TextAnchor.MiddleCenter);
+            StyleHkTitle(title);
             RectTransform titleRect = title.rectTransform;
             titleRect.anchorMin = new Vector2(0.5f, 0.5f);
             titleRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -84,7 +85,7 @@ public sealed partial class QuickMenu : Module
         private static RectTransform CreateBossManipulateGridRoot(Transform panel, RectTransform titleRect, float controlsTopY)
         {
             float titleBottomY = titleRect.anchoredPosition.y - (titleRect.sizeDelta.y * 0.5f);
-            float gridTopY = titleBottomY - 20f;
+            float gridTopY = titleBottomY - 50f;
             float gridBottomY = controlsTopY + 18f;
 
             GameObject gridObj = new("BossManipulateGrid");
@@ -217,7 +218,7 @@ public sealed partial class QuickMenu : Module
             button.targetGraphic = cardImage;
             button.onClick.AddListener(() => onClick());
 
-            RowHighlight highlight = CreateRowHighlight(card, cardImage);
+            RowHighlight highlight = CreateHkCardHighlight(card, cardImage);
             AttachRowHighlight(card, highlight);
 
             const float labelHeight = 30f;
@@ -287,7 +288,7 @@ public sealed partial class QuickMenu : Module
             dialogRect.sizeDelta = new Vector2(740f, 340f);
 
             Image dialogImage = dialogObj.AddComponent<Image>();
-            dialogImage.color = OverlayPanelColor;
+            StyleHkDialog(dialogImage);
 
             Text label = CreateText(dialogObj.transform, "Label", "Do you really want to reset everything?", 24, TextAnchor.MiddleCenter);
             label.horizontalOverflow = HorizontalWrapMode.Wrap;

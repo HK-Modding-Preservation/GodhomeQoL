@@ -15,6 +15,7 @@ public sealed partial class ShowHPOnDeath : Module
         }
 
         if (BossNames.Map.TryGetValue(self.gameObject.name, out string displayName)
+            && IsPrimaryHealthManager(self)
             && TryEnsureTrackedBossKey(self, displayName, out string bossKey))
         {
             UpdateTrackedBossHp(bossKey, self.hp);
@@ -204,8 +205,6 @@ public sealed partial class ShowHPOnDeath : Module
             return;
         }
 
-        UpdateHeadCandidate(self);
-
         if (self.gameObject.name == "Jar Collector" && IsCollectorImmortalTrackingSuppressed(self.gameObject))
         {
             if (BossNames.Map.TryGetValue(self.gameObject.name, out string collectorName))
@@ -226,7 +225,7 @@ public sealed partial class ShowHPOnDeath : Module
             return;
         }
 
-        if (!BossNames.Map.TryGetValue(self.gameObject.name, out string displayName))
+        if (!BossNames.Map.TryGetValue(self.gameObject.name, out string displayName) || !IsPrimaryHealthManager(self))
         {
             return;
         }

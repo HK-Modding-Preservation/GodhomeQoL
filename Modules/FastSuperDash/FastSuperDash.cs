@@ -152,16 +152,17 @@ public sealed class FastSuperDash : Module {
 				return false;
 			}
 
-			if (fastSuperDashEverywhere) {
-				return true;
-			}
-
 			GameManager? manager = GameManager.instance;
 			if (manager == null) {
 				return false;
 			}
 
 			string scene = manager.sceneName ?? string.Empty;
+			if (fastSuperDashEverywhere) {
+				return !BossSceneController.IsBossScene
+					&& scene is not ("Room_Colosseum_Bronze" or "Room_Colosseum_Silver" or "Room_Colosseum_Gold");
+			}
+
 			return scene is "GG_Workshop" or "GG_Atrium" or "GG_Atrium_Roof"
 				|| (PlayerDataR.bossRushMode && scene == "Room_Colosseum_01");
 		}

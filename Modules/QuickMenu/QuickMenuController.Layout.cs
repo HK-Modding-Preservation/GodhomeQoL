@@ -365,10 +365,13 @@ public sealed partial class QuickMenu : Module
             scrollbar.handleRect = handleRect;
             scrollbar.targetGraphic = handleImage;
             scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            scrollbar.navigation = new Navigation { mode = Navigation.Mode.None };
 
             scroll.viewport = viewportRect;
             scroll.content = contentRect;
             scroll.verticalScrollbar = scrollbar;
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+            StyleHkScrollbar(scrollbarImage, handleImage, handleRect);
             scroll.verticalNormalizedPosition = 1f;
 
             return contentRect;
@@ -452,12 +455,35 @@ public sealed partial class QuickMenu : Module
         private RowHighlight CreateRowHighlight(GameObject row, Image? baseImage)
         {
             Image image = baseImage ?? row.GetComponent<Image>() ?? row.AddComponent<Image>();
-            float baseAlpha = image.color.a;
-            float highlightAlpha = Mathf.Clamp(baseAlpha + 0.12f, 0.12f, 0.18f);
-            Color highlightColor = new(1f, 1f, 1f, highlightAlpha);
+            Color highlightColor = HkRowHighlightColor;
 
             RowHighlight highlight = row.AddComponent<RowHighlight>();
             highlight.Initialize(image, highlightColor);
+            return highlight;
+        }
+
+        private static readonly Color HkCardHoverColor = new(1f, 0.92f, 0.75f, 0.13f);
+
+        private static RowHighlight CreateHkCardHighlight(GameObject card, Image cardImage)
+        {
+            GameObject frameObject = new("HoverFrame");
+            frameObject.transform.SetParent(card.transform, false);
+            RectTransform frameRect = frameObject.AddComponent<RectTransform>();
+            frameRect.anchorMin = Vector2.zero;
+            frameRect.anchorMax = Vector2.one;
+            frameRect.offsetMin = Vector2.zero;
+            frameRect.offsetMax = Vector2.zero;
+            Image frame = frameObject.AddComponent<Image>();
+            frame.sprite = GetHkChamferSprite(true);
+            frame.type = Image.Type.Sliced;
+            frame.color = HkFrameOnColor;
+            frame.raycastTarget = false;
+            frame.enabled = false;
+
+            RowHighlight highlight = card.AddComponent<RowHighlight>();
+            highlight.UseCursors = false;
+            highlight.Frame = frame;
+            highlight.Initialize(cardImage, HkCardHoverColor);
             return highlight;
         }
 

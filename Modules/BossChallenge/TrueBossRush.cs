@@ -456,12 +456,54 @@ public sealed class TrueBossRush : Module
     {
         if (!OriginalSequences.TryGetValue(sequence, out BossScene[]? original))
         {
-            restored = Array.Empty<BossScene>();
-            return false;
+            return TryRestoreVanillaSequence(sequence, out restored);
         }
 
         restored = original.ToArray();
         return true;
+    }
+
+    private static bool TryRestoreVanillaSequence(BossSequence sequence, out BossScene[] restored)
+    {
+        restored = Array.Empty<BossScene>();
+        BossScene[]? current = GetBossScenes(sequence);
+        if (current == null || current.Length == 0)
+        {
+            return false;
+        }
+
+        int pantheonNumber = GetPantheon(current) switch
+        {
+            Pantheon.P1 => 1,
+            Pantheon.P2 => 2,
+            Pantheon.P3 => 3,
+            Pantheon.P4 => 4,
+            Pantheon.P5 => 5,
+            _ => 0
+        };
+
+        if (pantheonNumber == 0
+            || !RandomPantheons.TryBuildVanillaSequence(current, pantheonNumber, out BossScene[] vanilla)
+            || !HasSameBosses(current, vanilla)
+            || current.Select(scene => scene?.sceneName).SequenceEqual(vanilla.Select(scene => scene?.sceneName), StringComparer.Ordinal))
+        {
+            return false;
+        }
+
+        LogWarn($"TrueBossRush: original order of pantheon {pantheonNumber} was not cached, restored the default order");
+        restored = vanilla;
+        return true;
+    }
+
+    private static bool HasSameBosses(IEnumerable<BossScene> left, IEnumerable<BossScene> right)
+    {
+        static List<string> Bosses(IEnumerable<BossScene> scenes) => scenes
+            .Where(scene => scene != null && !string.IsNullOrEmpty(scene.sceneName) && !IsTransitionOrBench(scene.sceneName))
+            .Select(scene => scene.sceneName.ToUpperInvariant())
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToList();
+
+        return Bosses(left).SequenceEqual(Bosses(right), StringComparer.Ordinal);
     }
 
     private static BossScene[]? GetBossScenes(BossSequence sequence)

@@ -105,6 +105,7 @@ public sealed partial class QuickMenu : Module
             UpdateToggleValue(showHpAutoHideValue, ShowHpSettings.HideAfter10Sec);
 
             UpdateKeybindValue(showHpHudToggleKeyValue, GetShowHpBindingLabel());
+            UpdateKeybindValue(showHpHistoryKeyValue, GetShowHpBindingLabel(ShowHpSettings.Keybinds.History));
 
             float fade = ClampShowHpFade(ShowHpSettings.HudFadeSeconds);
             UpdateFloatValueText(showHpFadeValue, fade, 1);

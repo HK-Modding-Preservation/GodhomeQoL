@@ -24,6 +24,8 @@ public sealed partial class QuickMenu : Module
             SetRandomPantheonsVisible(false);
             SetTrueBossRushVisible(false);
             SetCheatsVisible(false);
+            SetSettingsPresetsVisible(false);
+            SetBossHistoryVisible(false);
             SetAlwaysFuriousVisible(false);
             SetGearSwitcherVisible(false);
             SetGearSwitcherCharmCostVisible(false);
@@ -242,6 +244,8 @@ public sealed partial class QuickMenu : Module
             DestroyRoot(ref randomPantheonsRoot);
             DestroyRoot(ref trueBossRushRoot);
             DestroyRoot(ref cheatsRoot);
+            DestroyRoot(ref settingsPresetsRoot);
+            DestroyRoot(ref bossHistoryRoot);
             DestroyRoot(ref alwaysFuriousRoot);
             DestroyRoot(ref gearSwitcherRoot);
             DestroyRoot(ref gearSwitcherCharmCostRoot);

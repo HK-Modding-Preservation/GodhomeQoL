@@ -297,6 +297,7 @@ public sealed partial class QuickMenu : Module
             handleImage.color = Color.white;
             slider.handleRect = handleRect;
             slider.targetGraphic = handleImage;
+            StyleHkSlider(sliderBg, fillAreaRect, fillImage, handleRect, handleImage);
 
             slider.onValueChanged.AddListener(OnSpeedChanged);
             speedSlider = slider;
@@ -372,6 +373,7 @@ public sealed partial class QuickMenu : Module
             handleImage.color = Color.white;
             sliderComponent.handleRect = handleRect;
             sliderComponent.targetGraphic = handleImage;
+            StyleHkSlider(sliderBg, fillAreaRect, fillImage, handleRect, handleImage);
 
             slider = sliderComponent;
 
@@ -383,7 +385,7 @@ public sealed partial class QuickMenu : Module
         {
             GameObject row = CreateRow(parent, name, y, new Vector2(260f, ButtonRowHeight));
             Image image = row.AddComponent<Image>();
-            image.color = new Color(1f, 1f, 1f, 0.08f);
+            image.color = new Color(1f, 1f, 1f, 0f);
 
             Button button = row.AddComponent<Button>();
             button.transition = Selectable.Transition.None;
@@ -396,6 +398,7 @@ public sealed partial class QuickMenu : Module
             rect.anchorMax = Vector2.one;
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
+            StyleHkButtonText(text);
 
             AddRowHighlight(row, image);
         }

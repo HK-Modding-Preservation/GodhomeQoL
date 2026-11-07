@@ -36,7 +36,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform2.anchoredPosition = Vector2.zero;
 			rectTransform2.sizeDelta = new Vector2(520f, 220f);
 			Image image2 = gameObject.AddComponent<Image>();
-			image2.color = OverlayPanelColor;
+			StyleHkDialog(image2);
 			Text text = CreateText(gameObject.transform, "Label", "Delete preset?", 28, TextAnchor.MiddleCenter);
 			RectTransform rectTransform3 = text.rectTransform;
 			rectTransform3.anchorMin = new Vector2(0.5f, 1f);
@@ -72,7 +72,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform2.anchoredPosition = Vector2.zero;
 			rectTransform2.sizeDelta = new Vector2(640f, 260f);
 			Image image2 = gameObject.AddComponent<Image>();
-			image2.color = OverlayPanelColor;
+			StyleHkDialog(image2);
 			Text text = CreateText(gameObject.transform, "Label", "Are you sure? This will remove all presets you've created. Do you want to continue?", 24, TextAnchor.MiddleCenter);
 			text.horizontalOverflow = HorizontalWrapMode.Wrap;
 			text.verticalOverflow = VerticalWrapMode.Overflow;
@@ -131,7 +131,7 @@ public sealed partial class QuickMenu : Module
 			rectTransform2.anchoredPosition = Vector2.zero;
 			rectTransform2.sizeDelta = new Vector2(760f, 300f);
 			Image image2 = gameObject.AddComponent<Image>();
-			image2.color = OverlayPanelColor;
+			StyleHkDialog(image2);
 			Text text = CreateText(gameObject.transform, "Label", "Are you serious? This will reset all mod settings to the default ones and delete all current settings", 24, TextAnchor.MiddleCenter);
 			text.horizontalOverflow = HorizontalWrapMode.Wrap;
 			text.verticalOverflow = VerticalWrapMode.Overflow;

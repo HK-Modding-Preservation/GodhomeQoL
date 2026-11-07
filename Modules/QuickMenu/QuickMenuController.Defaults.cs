@@ -30,7 +30,8 @@ public sealed partial class QuickMenu : Module
             Modules.QoL.DreamshieldStartAngle.ResetDefaults();
 
             ShowHPOnDeath.ResetFeatureDefaults();
-            ApplyShowHpBinding(null);
+            ApplyShowHpBinding(ShowHpSettings.Keybinds.Hide, null);
+            ApplyShowHpBinding(ShowHpSettings.Keybinds.History, null);
 
             GodhomeQoL.GlobalSettings.MaskDamage ??= new MaskDamageSettings();
             GodhomeQoL.GlobalSettings.MaskDamage.Enabled = false;
@@ -83,6 +84,7 @@ public sealed partial class QuickMenu : Module
             ResetZoteHelperDefaults();
             Modules.BossChallenge.ForceGreyPrinceEnterType.gpzEnterType =
                 Modules.BossChallenge.ForceGreyPrinceEnterType.EnterType.Off;
+            SetModuleEnabled<Modules.BossChallenge.ForceGreyPrinceEnterType>(false);
             SetModuleEnabled<Modules.BossChallenge.ZoteHelper>(false);
             ResetGruzMotherHelperDefaults();
             SetModuleEnabled<Modules.BossChallenge.GruzMotherHelper>(false);

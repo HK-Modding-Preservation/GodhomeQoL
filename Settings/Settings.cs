@@ -32,12 +32,21 @@ namespace GodhomeQoL
                 SaveGlobalSettingsSafe();
             }
         }
-        public GlobalSettings OnSaveGlobal() => GlobalSettings;
+        public GlobalSettings OnSaveGlobal()
+        {
+            UpdatePerSaveMirror();
+            return GlobalSettings;
+        }
 
         public static LocalSettings LocalSettings { get; private set; } = new();
+
+        private static int activeSaveSlot;
+        private static bool localSettingsLoaded;
+
         public void OnLoadLocal(LocalSettings s)
         {
             LocalSettings = s;
+            localSettingsLoaded = true;
             ApplyPerSaveModuleStates(s.PerSaveModules);
             if (GlobalSettings?.GearSwitcher != null
                 && string.IsNullOrWhiteSpace(GlobalSettings.GearSwitcher.LastPreset)
@@ -55,7 +64,116 @@ namespace GodhomeQoL
             }
 
             LocalSettings.PerSaveModules = CapturePerSaveModuleStates();
+            if (string.IsNullOrEmpty(LocalSettings.SaveToken))
+            {
+                LocalSettings.SaveToken = NewSaveToken();
+            }
+
+            UpdatePerSaveMirror();
             return LocalSettings;
+        }
+
+        private static string NewSaveToken() => Guid.NewGuid().ToString("N");
+
+        private static void OnSavegameLoad(int slot)
+        {
+            try
+            {
+                ApplySavegameLoad(slot);
+            }
+            finally
+            {
+                Modules.Tools.QuickMenu.RefreshQuickMenuEntryColors();
+            }
+        }
+
+        private static void ApplySavegameLoad(int slot)
+        {
+            activeSaveSlot = slot;
+            bool loadedOwnData = localSettingsLoaded;
+            localSettingsLoaded = false;
+
+            PerSaveMirror? mirror = null;
+            _ = GlobalSettings?.PerSaveMirrors?.TryGetValue(slot.ToString(), out mirror);
+
+            if (!loadedOwnData)
+            {
+                LocalSettings.SaveToken = NewSaveToken();
+                return;
+            }
+
+            if (string.IsNullOrEmpty(LocalSettings.SaveToken))
+            {
+                if (mirror != null && !string.IsNullOrEmpty(mirror.Token))
+                {
+                    LocalSettings.SaveToken = mirror.Token;
+                    ApplyPerSaveMirror(mirror);
+                }
+                else
+                {
+                    LocalSettings.SaveToken = NewSaveToken();
+                }
+
+                return;
+            }
+
+            if (mirror != null && string.Equals(mirror.Token, LocalSettings.SaveToken, StringComparison.Ordinal))
+            {
+                ApplyPerSaveMirror(mirror);
+            }
+        }
+
+        private static void ApplyPerSaveMirror(PerSaveMirror mirror)
+        {
+            try
+            {
+                LocalSettings.ApplyChangedValues(mirror.Values);
+                ApplyPerSaveModuleStates(mirror.Modules);
+                global::GodhomeQoL.Utils.Logger.LogDebug($"Per-save settings restored for slot {activeSaveSlot}");
+            }
+            catch (Exception ex)
+            {
+                LogSuppressed(ex, "Settings.cs/ApplyPerSaveMirror");
+            }
+        }
+
+        internal static void UpdatePerSaveMirror()
+        {
+            try
+            {
+                if (activeSaveSlot <= 0)
+                {
+                    GameManager? manager = GameManager.instance;
+                    if (manager == null || manager.profileID <= 0 || !manager.IsGameplayScene())
+                    {
+                        return;
+                    }
+
+                    activeSaveSlot = manager.profileID;
+                }
+
+                if (GlobalSettings == null)
+                {
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(LocalSettings.SaveToken))
+                {
+                    LocalSettings.SaveToken = NewSaveToken();
+                }
+
+                GlobalSettings.PerSaveMirrors ??= new Dictionary<string, PerSaveMirror>();
+                GlobalSettings.PerSaveMirrors[activeSaveSlot.ToString()] = new PerSaveMirror
+                {
+                    Token = LocalSettings.SaveToken!,
+                    Values = LocalSettings.CaptureChangedValues(),
+                    Modules = CapturePerSaveModuleStates()
+                };
+            }
+            catch (Exception ex)
+            {
+                LogSuppressed(ex, "Settings.cs/UpdatePerSaveMirror");
+            }
         }
 
         private static List<Module>? perSaveModules;
@@ -105,6 +223,18 @@ namespace GodhomeQoL
 
         internal static void ResetPerSaveState()
         {
+            if (activeSaveSlot > 0)
+            {
+                SaveGlobalSettingsSafe();
+            }
+
+            activeSaveSlot = 0;
+            localSettingsLoaded = false;
+            if (LocalSettings != null)
+            {
+                LocalSettings.SaveToken = null;
+            }
+
             LocalSettings?.ResetFieldsToDefaults();
             ApplyPerSaveModuleStates(null);
 
@@ -185,7 +315,24 @@ namespace GodhomeQoL
                 settings.LastPreset = "FullGear";
             }
 
+            ResetBuiltinPresets(settings);
             MigrateGearSwitcherMoves(settings);
+        }
+
+        private static void ResetBuiltinPresets(GearSwitcherSettings settings)
+        {
+            if (settings.Presets == null)
+            {
+                return;
+            }
+
+            foreach ((string name, GearPreset defaults) in GearPresetDefaults.CreateDefaults())
+            {
+                if (settings.Presets.ContainsKey(name))
+                {
+                    settings.Presets[name] = defaults;
+                }
+            }
         }
 
         private static void MigrateGearSwitcherMoves(GearSwitcherSettings settings)

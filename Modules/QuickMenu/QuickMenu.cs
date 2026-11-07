@@ -129,7 +129,7 @@ public sealed partial class QuickMenu : Module
         quickMenuHotkeyButton.Update();
     }
 
-    private static string GetQuickMenuHotkeyLabel() => FormatQuickMenuKeyLabel(GetQuickMenuToggleKey());
+    internal static string GetQuickMenuHotkeyLabel() => FormatQuickMenuKeyLabel(GetQuickMenuToggleKey());
 
     private static string FormatQuickMenuButtonName(string title, string value) => $"{title}: {value}";
 

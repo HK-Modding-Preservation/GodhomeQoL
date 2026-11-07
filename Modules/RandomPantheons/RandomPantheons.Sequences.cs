@@ -225,6 +225,36 @@ public sealed partial class RandomPantheons : Module
         return false;
     }
 
+    internal static bool TryBuildVanillaSequence(IReadOnlyList<BossScene> currentScenes, int pantheonNumber, out BossScene[] rebuilt)
+    {
+        Pantheon pantheon = pantheonNumber switch
+        {
+            1 => Pantheon.P1,
+            2 => Pantheon.P2,
+            3 => Pantheon.P3,
+            4 => Pantheon.P4,
+            5 => Pantheon.P5,
+            _ => Pantheon.Unknown
+        };
+
+        if (pantheon == Pantheon.Unknown || currentScenes == null)
+        {
+            rebuilt = Array.Empty<BossScene>();
+            return false;
+        }
+
+        try
+        {
+            return TryBuildDefaultSequence(pantheon, currentScenes.Where(scene => scene != null).ToList(), out rebuilt);
+        }
+        catch (Exception swallowed)
+        {
+            LogSuppressed(swallowed, "RandomPantheons.Sequences.cs");
+            rebuilt = Array.Empty<BossScene>();
+            return false;
+        }
+    }
+
     private static bool TryBuildDefaultSequence(Pantheon pantheon, List<BossScene> scenes, out BossScene[] rebuiltArray)
     {
         if (!DefaultPantheonOrder.TryGetValue(pantheon, out string[]? defaultOrder))

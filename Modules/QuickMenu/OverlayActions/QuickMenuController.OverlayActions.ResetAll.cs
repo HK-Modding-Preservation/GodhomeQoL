@@ -73,6 +73,8 @@ public sealed partial class QuickMenu : Module
             SetHornetSentinelHelperVisible(false);
             SetAllAdditionalGhostHelpersVisible(false);
             SetCheatsVisible(false);
+            SetSettingsPresetsVisible(false);
+            SetBossHistoryVisible(false);
             SetTrueBossRushVisible(false);
 
             ApplyInitialDefaults();
@@ -84,6 +86,8 @@ public sealed partial class QuickMenu : Module
             GodhomeQoL.GlobalSettings.QuickMenuVisibility = new Dictionary<string, bool>();
             GodhomeQoL.GlobalSettings.QuickMenuFreeLayout = false;
             GodhomeQoL.GlobalSettings.QuickMenuHotkey = DefaultQuickMenuHotkey;
+            GodhomeQoL.GlobalSettings.QuickMenuControllerButton = DefaultQuickMenuControllerButton;
+            GodhomeQoL.GlobalSettings.TeleportKitControllerButton = DefaultTeleportKitControllerButton;
             GodhomeQoL.GlobalSettings.QuickMenuOverlayHotkeys = new Dictionary<string, string>();
 
             GodhomeQoL.SaveGlobalSettingsSafe();
@@ -101,6 +105,11 @@ public sealed partial class QuickMenu : Module
             RebuildGearSwitcherPresetOverlay();
             SetGearSwitcherPresetVisible(false);
 
+            RefreshModulePanelsUi();
+        }
+
+        private void RefreshModulePanelsUi()
+        {
             RefreshFastSuperDashUi();
             RefreshCollectorPhasesUi();
             RefreshFastReloadUi();

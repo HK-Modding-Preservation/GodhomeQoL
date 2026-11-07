@@ -15,11 +15,14 @@ public sealed class ForceGreyPrinceEnterType : Module
             PlayMakerFSM fsm = go.LocateMyFSM("Control");
             fsm.AddCustomAction(
                 "Enter 1",
-                () => fsm.GetVariable<FsmBool>("Faced Zote").Value = gpzEnterType switch
+                () =>
                 {
-                    EnterType.Long => false,
-                    EnterType.Short => true,
-                    _ => false
+                    if (gpzEnterType == EnterType.Off)
+                    {
+                        return;
+                    }
+
+                    fsm.GetVariable<FsmBool>("Faced Zote").Value = gpzEnterType == EnterType.Short;
                 }
             );
 

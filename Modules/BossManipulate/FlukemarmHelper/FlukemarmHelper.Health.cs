@@ -89,6 +89,11 @@ public sealed partial class FlukemarmHelper : Module
 
     private static void RestoreVanillaHealth(GameObject target, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (target == null || !IsFlukemarmObject(target))
         {
             return;

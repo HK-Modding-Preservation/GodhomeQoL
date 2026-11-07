@@ -1,6 +1,7 @@
 ﻿
 using Modding.Utils;
 using Satchel.BetterMenus;
+using System.Globalization;
 using System.Runtime.Serialization;
 
 namespace GodhomeQoL.Settings
@@ -143,6 +144,70 @@ namespace GodhomeQoL.Settings
             }
         }
 
+        private static string SettingKey(FieldInfo field) => $"{field.DeclaringType?.FullName}.{field.Name}";
+
+        internal Dictionary<string, object> CaptureChangedValues()
+        {
+            Dictionary<string, object> changed = new(StringComparer.Ordinal);
+            if (defaultValues == null)
+            {
+                return changed;
+            }
+
+            foreach ((FieldInfo field, object? defaultValue) in defaultValues)
+            {
+                object? current;
+                try
+                {
+                    current = field.GetValue(null);
+                }
+                catch (Exception ex)
+                {
+                    LogSuppressed(ex, "SettingBase.cs/Capture");
+                    continue;
+                }
+
+                if (current == null || Equals(current, defaultValue))
+                {
+                    continue;
+                }
+
+                changed[SettingKey(field)] = current is Enum ? Convert.ToInt64(current, CultureInfo.InvariantCulture) : current;
+            }
+
+            return changed;
+        }
+
+        internal void ApplyChangedValues(Dictionary<string, object>? values)
+        {
+            ResetFieldsToDefaults();
+            if (values == null || values.Count == 0 || defaultValues == null)
+            {
+                return;
+            }
+
+            foreach ((FieldInfo field, _) in defaultValues)
+            {
+                if (!values.TryGetValue(SettingKey(field), out object? raw) || raw == null)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    Type type = field.FieldType;
+                    object value = type.IsEnum
+                        ? Enum.ToObject(type, Convert.ToInt64(raw, CultureInfo.InvariantCulture))
+                        : Convert.ChangeType(raw, type, CultureInfo.InvariantCulture);
+                    field.SetValue(null, value);
+                }
+                catch (Exception ex)
+                {
+                    LogSuppressed(ex, "SettingBase.cs/" + field.Name);
+                }
+            }
+        }
+
         internal IEnumerable<Element> GetMenuElements(string category)
         {
             List<Element> options = [];
@@ -188,7 +253,7 @@ namespace GodhomeQoL.Settings
                     {
                         OptionType.Option => Blueprints.GenericHorizontalOption(
                             $"Settings/{name}".Localize(),
-                            descPrefix + $"Modules/{fi.DeclaringType.Name}",
+                            descPrefix + $"Modules/{fi.DeclaringType.Name}".Localize(),
                             attr.Options,
                             setter,
                             getter

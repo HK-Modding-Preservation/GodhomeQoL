@@ -123,7 +123,8 @@ public sealed partial class QuickMenu : Module
             waitingForShowHpRebind = false;
             showHpPrevBindingRaw = string.Empty;
             ShowHPOnDeath.ResetFeatureDefaults();
-            ApplyShowHpBinding(null);
+            ApplyShowHpBinding(ShowHpSettings.Keybinds.Hide, null);
+            ApplyShowHpBinding(ShowHpSettings.Keybinds.History, null);
             RefreshShowHpOnDeathUi();
             UpdateQuickMenuEntryStateColors();
         }
@@ -182,6 +183,8 @@ public sealed partial class QuickMenu : Module
             Modules.QoL.TeleportKit.MenuHotkey = KeyCode.F6;
             Modules.QoL.TeleportKit.SaveTeleportHotkey = KeyCode.R;
             Modules.QoL.TeleportKit.TeleportHotkey = KeyCode.T;
+            GodhomeQoL.GlobalSettings.TeleportKitControllerButton = DefaultTeleportKitControllerButton;
+            UpdateKeybindValue(teleportKitControllerButtonValue, GetTeleportKitControllerButtonLabel());
             RefreshTeleportKitUi();
         }
 

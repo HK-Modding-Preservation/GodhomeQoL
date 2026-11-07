@@ -44,6 +44,7 @@ internal static class SettingsAutoSave
 
             try
             {
+                GodhomeQoL.UpdatePerSaveMirror();
                 string? snapshot = Capture();
                 if (snapshot != null && snapshot != lastSnapshot)
                 {

@@ -248,17 +248,55 @@ public sealed partial class GearSwitcher : Module
                 action.AddBinding(binding);
             }
 
+            ReleaseAttackKeysFromOtherActions(action);
             return;
         }
 
         if (Settings.NailAttackBindingsStored)
         {
             RestoreNailAttackFromSettings(action);
+            ReleaseAttackKeysFromOtherActions(action);
             CacheNailAttackBindings(action);
         }
         else
         {
             action.ClearBindings();
+        }
+    }
+
+    private static void ReleaseAttackKeysFromOtherActions(PlayerAction action)
+    {
+        try
+        {
+            PlayerActionSet? owner = action.Owner;
+            if (owner == null)
+            {
+                return;
+            }
+
+            bool released = false;
+            foreach (BindingSource binding in action.Bindings.ToList())
+            {
+                foreach (PlayerAction other in owner.Actions)
+                {
+                    if (other == action || !other.HasBinding(binding))
+                    {
+                        continue;
+                    }
+
+                    other.RemoveBinding(binding);
+                    released = true;
+                }
+            }
+
+            if (released)
+            {
+                QuickMenu.ShowStatusMessageFromExternal("GearSwitcher/AttackKeyRestored".Localize());
+            }
+        }
+        catch (Exception ex)
+        {
+            LogSuppressed(ex, "GearSwitcher.NailInput.cs/ReleaseAttackKeys");
         }
     }
 

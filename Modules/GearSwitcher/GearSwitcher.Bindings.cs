@@ -393,11 +393,22 @@ public sealed partial class GearSwitcher : Module
 
             child.gameObject.SetActive(false);
             child.gameObject.SetActive(true);
+            ShowHudIfSafe();
         }
         catch (Exception swallowed)
         {
             LogSuppressed(swallowed, "GearSwitcher.Bindings.cs");
         }
+    }
+
+    private static void ShowHudIfSafe()
+    {
+        if (!IsSafeToApply() || GameManager.instance.IsGamePaused())
+        {
+            return;
+        }
+
+        Ref.GC?.hudCanvas?.LocateMyFSM("Slide Out")?.SendEvent("IN");
     }
 
     private static void TryRefreshVesselsHud() => TryRestartHudChild("Soul Orb/Vessels");

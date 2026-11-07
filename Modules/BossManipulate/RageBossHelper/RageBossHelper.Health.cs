@@ -60,6 +60,11 @@ public abstract partial class RageBossHelper : Module
 
     private protected void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || !IsBossObject(boss))
         {
             return;

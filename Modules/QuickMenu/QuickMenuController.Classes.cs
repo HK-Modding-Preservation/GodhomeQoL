@@ -125,11 +125,29 @@ public sealed partial class QuickMenu : Module
                 SetActive(manualActive || hoverCount > 0 || selectCount > 0);
             }
 
+            public bool UseCursors { get; set; } = true;
+
+            public Image? Frame { get; set; }
+
             private void SetActive(bool active)
             {
                 if (background != null)
                 {
                     background.color = active ? highlightColor : baseColor;
+                }
+
+                if (Frame != null)
+                {
+                    Frame.enabled = active;
+                }
+
+                if (active && UseCursors)
+                {
+                    ShowHkCursors(this);
+                }
+                else
+                {
+                    HideHkCursors(this);
                 }
             }
         }

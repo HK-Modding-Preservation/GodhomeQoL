@@ -12,6 +12,15 @@ public sealed partial class QuickMenu : Module
 {
     private sealed partial class QuickMenuController
     {
+        private bool showHpRebindHistory;
+        private Text? showHpHistoryKeyValue;
+
+        private Text? ShowHpRebindValue => showHpRebindHistory ? showHpHistoryKeyValue : showHpHudToggleKeyValue;
+
+        private static PlayerAction GetShowHpRebindAction(bool history) => history ? ShowHpSettings.Keybinds.History : ShowHpSettings.Keybinds.Hide;
+
+        private static string GetShowHpRebindOwner(bool history) => (history ? "ShowHPOnDeath/HistoryKey" : "ShowHPOnDeath/HudToggleKey").Localize();
+
         private bool IsShowHpOnDeathRebinding()
         {
             return waitingForShowHpRebind;
@@ -19,9 +28,25 @@ public sealed partial class QuickMenu : Module
 
         private void StartShowHpOnDeathRebind()
         {
+            StartShowHpRebind(false);
+        }
+
+        private void StartShowHpHistoryRebind()
+        {
+            StartShowHpRebind(true);
+        }
+
+        private void StartShowHpRebind(bool history)
+        {
+            if (waitingForShowHpRebind)
+            {
+                CancelShowHpOnDeathRebind();
+            }
+
+            showHpRebindHistory = history;
             waitingForShowHpRebind = true;
-            showHpPrevBindingRaw = GetShowHpBindingRaw();
-            UpdateKeybindValue(showHpHudToggleKeyValue, "Settings/FastReload/SetKey".Localize());
+            showHpPrevBindingRaw = GetShowHpBindingRaw(GetShowHpRebindAction(history));
+            UpdateKeybindValue(ShowHpRebindValue, "Settings/FastReload/SetKey".Localize());
         }
 
         private void CancelShowHpOnDeathRebind()
@@ -32,7 +57,7 @@ public sealed partial class QuickMenu : Module
             }
 
             waitingForShowHpRebind = false;
-            UpdateKeybindValue(showHpHudToggleKeyValue, GetShowHpBindingLabel());
+            UpdateKeybindValue(ShowHpRebindValue, GetShowHpBindingLabel(GetShowHpRebindAction(showHpRebindHistory)));
         }
 
         private void HandleShowHpOnDeathRebind()
@@ -61,10 +86,11 @@ public sealed partial class QuickMenu : Module
 
         private void ApplyShowHpOnDeathRebind(KeyCode key)
         {
+            PlayerAction action = GetShowHpRebindAction(showHpRebindHistory);
             if (key == KeyCode.Escape)
             {
                 waitingForShowHpRebind = false;
-                UpdateKeybindValue(showHpHudToggleKeyValue, GetShowHpBindingLabel());
+                UpdateKeybindValue(ShowHpRebindValue, GetShowHpBindingLabel(action));
                 return;
             }
 
@@ -77,26 +103,21 @@ public sealed partial class QuickMenu : Module
             bool clear = !string.IsNullOrEmpty(showHpPrevBindingRaw)
                 && string.Equals(showHpPrevBindingRaw, newLabel, StringComparison.Ordinal);
 
-            if (!clear && TryGetShowHpOnDeathHotkeyConflictOwners(key, out string conflictOwners))
+            if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, GetShowHpRebindOwner(showHpRebindHistory), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
-                UpdateKeybindValue(showHpHudToggleKeyValue, "Settings/FastReload/SetKey".Localize());
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
+                UpdateKeybindValue(ShowHpRebindValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }
 
-            ApplyShowHpBinding(clear ? (Key?)null : mapped);
+            ApplyShowHpBinding(action, clear ? (Key?)null : mapped);
             waitingForShowHpRebind = false;
-            UpdateKeybindValue(showHpHudToggleKeyValue, GetShowHpBindingLabel());
+            overlayHotkeySuppressFrames = 2;
+            UpdateKeybindValue(ShowHpRebindValue, GetShowHpBindingLabel(action));
         }
 
-        private bool TryGetShowHpOnDeathHotkeyConflictOwners(KeyCode key, out string ownersText)
+        private static void ApplyShowHpBinding(PlayerAction action, Key? key)
         {
-            return TryGetHotkeyConflictOwnersExceptSelf(key, "ShowHPOnDeath/HudToggleKey".Localize(), out ownersText);
-        }
-
-        private static void ApplyShowHpBinding(Key? key)
-        {
-            PlayerAction action = ShowHpSettings.Keybinds.Hide;
             InputControlType controllerBinding = KeybindUtil.GetControllerButtonBinding(action);
 
             action.ClearBindings();
@@ -112,16 +133,44 @@ public sealed partial class QuickMenu : Module
             }
         }
 
-        private string GetShowHpBindingLabel()
+        private string GetShowHpBindingLabel() => GetShowHpBindingLabel(ShowHpSettings.Keybinds.Hide);
+
+        private string GetShowHpBindingLabel(PlayerAction action)
         {
-            string raw = GetShowHpBindingRaw();
+            string raw = GetShowHpBindingRaw(action);
             return string.IsNullOrEmpty(raw) ? "Settings/FastReload/NotSet".Localize() : raw;
         }
 
-        private static string GetShowHpBindingRaw()
+        private static string GetShowHpBindingRaw() => GetShowHpBindingRaw(ShowHpSettings.Keybinds.Hide);
+
+        private static string GetShowHpBindingRaw(PlayerAction action)
         {
-            InputHandler.KeyOrMouseBinding binding = KeybindUtil.GetKeyOrMouseBinding(ShowHpSettings.Keybinds.Hide);
+            InputHandler.KeyOrMouseBinding binding = KeybindUtil.GetKeyOrMouseBinding(action);
             return FormatKeyOrMouseBinding(binding);
+        }
+
+        private void HandleBossHistoryHotkey()
+        {
+            PlayerAction? action = ShowHpSettings?.Keybinds?.History;
+            if (action == null || !action.WasPressed)
+            {
+                return;
+            }
+
+            if (bossHistoryVisible)
+            {
+                CloseAllOverlaysForHotkey();
+                return;
+            }
+
+            returnToQuickOnClose = false;
+            returnToBossManipulateOnClose = false;
+            returnToQolOnClose = false;
+            SetQuickVisible(false);
+            SetQuickSettingsVisible(false);
+            CloseAllOverlaysForHotkey();
+            bossHistorySelected = null;
+            SetBossHistoryVisible(true);
         }
     }
 }

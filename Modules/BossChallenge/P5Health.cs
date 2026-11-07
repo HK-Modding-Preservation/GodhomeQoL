@@ -80,21 +80,11 @@ public sealed class P5Health : Module {
 		}
 	}
 
-	private static bool IsHalveAscendedEnabled()
-	{
-		if (ModuleManager.TryGetModule("HalveDamageHoGAscendedOrAbove", out Module? module))
-		{
-			return module.Enabled;
-		}
-
-		return false;
-	}
-
 	private static int FixDamage(ref int hazardType, int damage) => damage switch {
 		int i when i <= 0 => i,
 		int i when BossSceneController.IsBossScene is false => i,
 		int i => BossSceneController.Instance.Reflect().bossLevel switch {
-			1 => IsHalveAscendedEnabled() ? i : i * 2,
+			1 => i * 2,
 			2 => 9999,
 			_ => i,
 		}

@@ -1,6 +1,7 @@
 ﻿using UnityEngine.Audio;
 using Satchel.Futils;
 using GodhomeQoL.Modules.QoL;
+using GodhomeQoL.Modules.Tools;
 namespace GodhomeQoL.Modules.BossChallenge;
 
 public sealed class InfiniteChallenge : Module
@@ -13,6 +14,11 @@ public sealed class InfiniteChallenge : Module
     private const string BlueHealthControlFsmName = "Blue Health Control";
     private const string UpdateBlueHealthEvent = "UPDATE BLUE HEALTH";
     private const string LastHpAddedEvent = "LAST HP ADDED";
+    private const string WeaverlingTag = "Weaverling";
+    private const string CharmEffectsName = "Charm Effects";
+    private const string WeaverlingControlFsmName = "Weaverling Control";
+    private const string CharmEquipCheckEvent = "CHARM EQUIP CHECK";
+    private static readonly float[] WeaverlingRecheckDelays = [1.5f, 2f];
 
     [GlobalSetting]
     [BoolOption]
@@ -208,6 +214,8 @@ public sealed class InfiniteChallenge : Module
 
     private static void RecordSetupEvent(On.BossSceneController.orig_Awake orig, BossSceneController self)
     {
+        pendingDeathRestart = false;
+        pendingDeathSceneName = null;
         BossFightRestartCompatibility.RecordCurrentSetupEvent();
         orig(self);
         BossFightRestartCompatibility.RecordCurrentSetupEvent();
@@ -238,6 +246,8 @@ public sealed class InfiniteChallenge : Module
 
         if (BossFightRestartCompatibility.IsFastReloadTransitionInProgress)
         {
+            pendingDeathRestart = false;
+            pendingDeathSceneName = null;
             orig(self, info);
             return;
         }
@@ -283,6 +293,7 @@ public sealed class InfiniteChallenge : Module
                 autoplayGuardArmed = true;
                 _ = GlobalCoroutineExecutor.Start(DisarmAutoplayGuardAfterEntry(++autoplayGuardGeneration));
                 _ = GlobalCoroutineExecutor.Start(DelayedEnableRenderer());
+                _ = GlobalCoroutineExecutor.Start(RecoverAfterRestart());
                 Ref.HC.EnterWithoutInput(true);
                 Ref.HC.AcceptInput();
                 Ref.HC.StartCoroutine(UpdateHUD());
@@ -331,6 +342,79 @@ public sealed class InfiniteChallenge : Module
         yield return new WaitWhile(() => Ref.GM.IsInSceneTransition);
 
         Ref.HC.EnableRenderer();
+    }
+
+    private static IEnumerator RecoverAfterRestart()
+    {
+        float deadline = Time.unscaledTime + 30f;
+        while (!Ref.GM.IsInSceneTransition && Time.unscaledTime < deadline)
+        {
+            yield return null;
+        }
+
+        while (Ref.GM.IsInSceneTransition && Time.unscaledTime < deadline)
+        {
+            yield return null;
+        }
+
+        NormalizeTimeAfterRestart();
+
+        foreach (float delay in WeaverlingRecheckDelays)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+            EnsureWeaverlingsAfterRestart();
+        }
+    }
+
+    private static void NormalizeTimeAfterRestart()
+    {
+        try
+        {
+            if (FreezeHitboxes.IsFreezeActive()
+                || SpeedChanger.IsTimeScaleFrozen
+                || Ref.GM == null
+                || Ref.GM.IsGamePaused())
+            {
+                return;
+            }
+
+            if (TimeController.SlowMotionTimeScale < 1f)
+            {
+                TimeController.SlowMotionTimeScale = 1f;
+            }
+
+            if (TimeController.GenericTimeScale < 1f)
+            {
+                TimeController.GenericTimeScale = 1f;
+            }
+        }
+        catch (Exception swallowed)
+        {
+            LogSuppressed(swallowed, "InfiniteChallenge.cs/NormalizeTime");
+        }
+    }
+
+    private static void EnsureWeaverlingsAfterRestart()
+    {
+        try
+        {
+            PlayerData? data = PlayerData.instance;
+            if (Ref.HC == null || data == null || !data.GetBool("equippedCharm_39"))
+            {
+                return;
+            }
+
+            if (GameObject.FindGameObjectsWithTag(WeaverlingTag).Length > 0)
+            {
+                return;
+            }
+
+            GameObject.Find(CharmEffectsName)?.LocateMyFSM(WeaverlingControlFsmName)?.SendEvent(CharmEquipCheckEvent);
+        }
+        catch (Exception swallowed)
+        {
+            LogSuppressed(swallowed, "InfiniteChallenge.cs/Weaverlings");
+        }
     }
 
     private static IEnumerator SetAudio(bool reset)

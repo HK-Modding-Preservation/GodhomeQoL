@@ -5,8 +5,8 @@ internal static class BossNames
     internal static readonly Dictionary<string, string> Map = new()
     {
         { "Giant Fly", "Gruz Mother" },
-        { "Giant Buzzer Col", "Vengerfly King" },
-        { "Giant Buzzer Col (1)", "Vengerfly King" },
+        { "Giant Buzzer Col", "Vengefly King" },
+        { "Giant Buzzer Col (1)", "Vengefly King" },
         { "Mawlek Body", "Brooding Mawlek" },
         { "False Knight New", "False Knight" },
         { "False Knight Dream", "Failed Champion" },
@@ -30,7 +30,7 @@ internal static class BossNames
         { "Lobster", "Beast" },
         { "Mega Zombie Beam Miner (1)", "Crystal Guardian" },
         { "Zombie Beam Miner Rematch", "Enraged Guardian" },
-        { "Mega Jellyfish GG", "Uumu" },
+        { "Mega Jellyfish GG", "Uumuu" },
         { "Mantis Traitor Lord", "Traitor Lord" },
         { "Grey Prince", "Grey Prince Zote" },
         { "Mage Knight", "Soul Warrior" },

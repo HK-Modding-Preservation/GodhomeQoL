@@ -41,12 +41,9 @@ public sealed partial class ShowHPOnDeath : Module
         pendingTrackingScene = "";
         pendingTrackingFromWorkshop = false;
         pendingTrackingClearDisplay = true;
-        lastDisplayText = string.Empty;
         ClearPendingDisplay();
         ClearTrackedBossCollection();
         phaseTrackers.Clear();
-        headHPs.Clear();
-        headConfirmed.Clear();
         if (clearDisplay)
         {
             UpdateDisplay("");
@@ -66,8 +63,6 @@ public sealed partial class ShowHPOnDeath : Module
         pendingTrackingClearDisplay = true;
         ClearTrackedBossCollection();
         phaseTrackers.Clear();
-        headHPs.Clear();
-        headConfirmed.Clear();
     }
 
     private static void ScheduleTrackingStart(string sceneName, bool fromWorkshop, bool clearDisplay)
@@ -81,12 +76,9 @@ public sealed partial class ShowHPOnDeath : Module
         pendingTrackingScene = sceneName;
         pendingTrackingFromWorkshop = fromWorkshop;
         pendingTrackingClearDisplay = clearDisplay;
-        lastDisplayText = string.Empty;
         ClearPendingDisplay();
         ClearTrackedBossCollection();
         phaseTrackers.Clear();
-        headHPs.Clear();
-        headConfirmed.Clear();
         if (clearDisplay)
         {
             UpdateDisplay("");

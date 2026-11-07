@@ -462,6 +462,11 @@ public abstract class MimicSpiderBossHelper : Module
 
     private void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || !IsBossObject(boss))
         {
             return;

@@ -581,6 +581,11 @@ public sealed class NailsageSlyHelper : Module
 
     private static void RestoreVanillaHealth(GameObject boss, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (boss == null || !IsNailsageSlyObject(boss))
         {
             return;

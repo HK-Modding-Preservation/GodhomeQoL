@@ -79,7 +79,7 @@ public sealed partial class QuickMenu : Module
 
             if (!clear && TryGetHotkeyConflictOwnersExceptSelf(key, "Settings/QoL/NailDamageCheck".Localize(), out string conflictOwners))
             {
-                ShowStatusMessage($"HOTKEY {FormatKeyLabel(key)} занят: {conflictOwners}");
+                ShowStatusMessage(string.Format("QuickMenu/HotkeyInUse".Localize(), FormatKeyLabel(key), conflictOwners));
                 UpdateKeybindValue(nailDamageCheckKeyValue, "Settings/FastReload/SetKey".Localize());
                 return;
             }

@@ -150,6 +150,11 @@ public abstract partial class ArmoredBossHelper : Module
 
     private void RestoreVanillaRecoverHp(GameObject armorObject)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (armorObject == null)
         {
             return;

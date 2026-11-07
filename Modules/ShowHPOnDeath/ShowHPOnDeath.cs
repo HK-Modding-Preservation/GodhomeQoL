@@ -40,13 +40,6 @@ public sealed partial class ShowHPOnDeath : Module
 
     private static readonly HashSet<string> showAtScenes = new() { "GG_Workshop", "GG_Atrium", "GG_Atrium_Roof" };
     private static readonly HashSet<string> phaseBosses = new() { "False Knight", "Failed Champion" };
-    private static readonly Dictionary<string, string> phaseBossScenes = new()
-    {
-        { "GG_False_Knight", "False Knight" },
-        { "GG_Failed_Champion", "Failed Champion" }
-    };
-    private static readonly Dictionary<string, int> headHPs = new();
-    private static readonly HashSet<string> headConfirmed = new();
 
     private sealed class PhaseTracker
     {

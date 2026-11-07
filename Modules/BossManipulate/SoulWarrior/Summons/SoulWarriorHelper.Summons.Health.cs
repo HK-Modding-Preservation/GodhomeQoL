@@ -62,6 +62,11 @@ public sealed partial class SoulWarriorHelper : Module
 
     private static void RestoreVanillaSummonHealth(GameObject summon, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (summon == null || !IsSoulWarriorSummonObject(summon))
         {
             return;

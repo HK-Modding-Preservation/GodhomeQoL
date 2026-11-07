@@ -223,6 +223,11 @@ public sealed partial class WingedNoskHelper : Module
 
     private static void RestoreVanillaSummonHealth(GameObject summon, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (summon == null || !IsWingedNoskSummonObject(summon))
         {
             return;

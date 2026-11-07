@@ -115,17 +115,13 @@ namespace GodhomeQoL.Utils
             }
 
             T[] newArray = new T[array.Length - removeCount];
-            int offset = 0;
-            for (int i = array.Length - 1; i >= 0; i--)
+            int index = 0;
+            foreach (T item in array)
             {
-                T item = array[i];
-                if (shouldRemove(item))
+                if (!shouldRemove(item))
                 {
-                    offset++;
-                    continue;
+                    newArray[index++] = item;
                 }
-
-                newArray[i - offset] = item;
             }
 
             return newArray;

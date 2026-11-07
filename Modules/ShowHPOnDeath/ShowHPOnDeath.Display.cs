@@ -56,10 +56,17 @@ public sealed partial class ShowHPOnDeath : Module
             }
         }
 
+        if (snapshot.Count == 0)
+        {
+            return string.Empty;
+        }
+
         string hideKey = Settings.Keybinds.Hide.UnfilteredBindings.Count > 0
             ? Settings.Keybinds.Hide.UnfilteredBindings[0].Name
             : "Unbound";
-        string displayText = $"Press [{hideKey}] to hide\n";
+        string title = BossHistory.TryGetBossForScene(trackedScene, out string fightName) ? fightName : snapshot[0].Name;
+        System.Text.StringBuilder builder = new();
+        builder.Append(ShowHPOnDeathDisplay.TitleLine).Append('\t').Append(title).Append('\n');
 
         Dictionary<string, int> nameInstances = [];
         foreach (var (bossKey, name, currentHP) in snapshot)
@@ -67,36 +74,39 @@ public sealed partial class ShowHPOnDeath : Module
             int count = nameInstances.TryGetValue(name, out int existingCount) ? existingCount + 1 : 1;
             nameInstances[name] = count;
             string finalName = count > 1 ? $"{name} ({count})" : name;
+            int pb = Settings.ShowPB && personalBestByBoss.TryGetValue(bossKey, out int best) ? best : -1;
 
             if (phaseBosses.Contains(name) && phaseTrackers.TryGetValue(name, out PhaseTracker? tracker))
             {
                 int fallbackInitialHp = initialHPs.TryGetValue(bossKey, out int initialForPhase) ? initialForPhase : 0;
-                string pbText = personalBestByBoss.TryGetValue(bossKey, out int pb) ? pb.ToString() : "-";
-                displayText += $"[{finalName}]\n";
-                displayText += BuildPhaseLines(name, tracker, fallbackInitialHp);
-                if (Settings.ShowPB)
+                foreach (BossHistoryPart part in GetPhaseParts(name, tracker, fallbackInitialHp))
                 {
-                    displayText += $"PB: {pbText}\n";
+                    AppendDisplayRow(builder, part.Name, part.Hp, part.Max, -1);
                 }
+
+                if (pb >= 0)
+                {
+                    builder.Append(ShowHPOnDeathDisplay.NoteLine).Append('\t').Append($"PB {pb}").Append('\n');
+                }
+
                 continue;
             }
 
-            if (initialHPs.TryGetValue(bossKey, out int initialHP))
-            {
-                string pbText = personalBestByBoss.TryGetValue(bossKey, out int pb) ? pb.ToString() : "-";
-                displayText += $"[{finalName}]\nHP: {currentHP} / {initialHP}\n";
-                if (Settings.ShowPB)
-                {
-                    displayText += $"PB: {pbText}\n";
-                }
-            }
-            else
-            {
-                displayText += $"[{finalName}]\nHP: {currentHP}\n";
-            }
+            int max = initialHPs.TryGetValue(bossKey, out int initialHP) ? initialHP : 0;
+            AppendDisplayRow(builder, GetDisplayLabel(bossKey, finalName), currentHP, max, pb);
         }
 
-        return displayText;
+        builder.Append(ShowHPOnDeathDisplay.HintLine).Append('\t').Append($"Press [{hideKey}] to hide");
+        return builder.ToString();
+    }
+
+    private static void AppendDisplayRow(System.Text.StringBuilder builder, string label, int hp, int max, int pb)
+    {
+        builder.Append(ShowHPOnDeathDisplay.BossLine).Append('\t')
+            .Append(label.Replace('\t', ' ')).Append('\t')
+            .Append(hp).Append('\t')
+            .Append(max).Append('\t')
+            .Append(pb).Append('\n');
     }
 
     private void DisplayWithAutoHide(string text)

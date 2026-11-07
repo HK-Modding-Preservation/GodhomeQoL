@@ -535,6 +535,11 @@ public sealed class HornetSentinelHelper : Module
 
     private static void RestoreVanillaHealth(GameObject hornetSentinel, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (hornetSentinel == null || !IsHornetSentinelObject(hornetSentinel))
         {
             return;

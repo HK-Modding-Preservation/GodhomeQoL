@@ -30,9 +30,15 @@ namespace GodhomeQoL.Modules.BossChallenge
 
         private static readonly SceneEdit radianceHandle = new(
             new("GG_Radiance", "Boss Control", "Absolute Radiance"),
-            go => go.LocateMyFSM("Control")
-                .GetAction<SetStaticVariable>("Ending Scene", 1)
-                .setValue.boolValue = !running
+            go =>
+            {
+                if (running)
+                {
+                    go.LocateMyFSM("Control")
+                        .GetAction<SetStaticVariable>("Ending Scene", 1)
+                        .setValue.boolValue = false;
+                }
+            }
         );
 
         private static BossSequence? sequence = null;
@@ -204,7 +210,7 @@ namespace GodhomeQoL.Modules.BossChallenge
                 return;
             }
 
-            self.descriptionText.text = "SegmentedP5/SelectSegment";
+            self.descriptionText.text = "SegmentedP5/SelectSegment".Localize();
 
             if (selectBtn != null)
             {

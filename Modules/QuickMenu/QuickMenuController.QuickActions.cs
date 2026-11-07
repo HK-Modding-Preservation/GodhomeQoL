@@ -52,7 +52,9 @@ public sealed partial class QuickMenu : Module
                 SetHornetSentinelHelperVisible,
                 SetAllAdditionalGhostHelpersVisible,
                 SetBossManipulateVisible,
-                SetCheatsVisible
+                SetCheatsVisible,
+                SetSettingsPresetsVisible,
+                SetBossHistoryVisible
             };
 
             foreach (Action<bool> panel in panels)
@@ -143,6 +145,11 @@ public sealed partial class QuickMenu : Module
         private void OnQuickCheatsClicked()
         {
             OpenPanelFromQuick(SetCheatsVisible);
+        }
+
+        private void OnQuickSettingsPresetsClicked()
+        {
+            OpenPanelFromQuick(SetSettingsPresetsVisible);
         }
 
         private void OnQuickAlwaysFuriousClicked()

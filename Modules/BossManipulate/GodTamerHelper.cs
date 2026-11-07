@@ -343,6 +343,11 @@ public sealed class GodTamerHelper : Module
 
     private static void RestoreVanillaHealth(GameObject target, HealthManager? hm = null)
     {
+        if (!hoGEntryAllowed)
+        {
+            return;
+        }
+
         if (target == null || !IsGodTamerObject(target))
         {
             return;

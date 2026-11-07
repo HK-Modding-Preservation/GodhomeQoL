@@ -21,6 +21,7 @@ public sealed partial class GodhomeQoL : Mod, ITogglableMod, ICustomMenuMod
     {
         On.GameManager.OnApplicationQuit += OnApplicationQuit;
         USceneManager.activeSceneChanged += OnActiveSceneChanged;
+        ModHooks.SavegameLoadHook += OnSavegameLoad;
         ModMenu.InstallHooks();
         ToggleableBindings.ToggleableBindings.Initialize(preloadedObjects);
         ResetPerSaveState();
@@ -35,6 +36,7 @@ public sealed partial class GodhomeQoL : Mod, ITogglableMod, ICustomMenuMod
         SettingsAutoSave.Stop();
         On.GameManager.OnApplicationQuit -= OnApplicationQuit;
         USceneManager.activeSceneChanged -= OnActiveSceneChanged;
+        ModHooks.SavegameLoadHook -= OnSavegameLoad;
         ModMenu.UninstallHooks();
         ModuleManager.Unload();
         ToggleableBindings.ToggleableBindings.Unload();

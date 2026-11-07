@@ -49,7 +49,7 @@ public sealed partial class QuickMenu : Module
 
 		private void OnGearSwitcherPresetCreateClicked()
 		{
-			string value = GearSwitcher.CreateCustomPresetFromFullGear();
+			string value = GearSwitcher.CreateCustomPresetFromCurrentGear();
 			if (!string.IsNullOrWhiteSpace(value))
 			{
 				gearSwitcherSelectedPreset = value;

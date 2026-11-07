@@ -71,7 +71,7 @@ public sealed partial class QuickMenu : Module
             image.color = new Color(1f, 1f, 1f, 0.08f);
 
             Outline outline = buttonObj.AddComponent<Outline>();
-            outline.effectColor = Color.white;
+            outline.effectColor = new Color(1f, 1f, 1f, 0.35f);
             outline.effectDistance = new Vector2(1f, -1f);
 
             Button button = buttonObj.AddComponent<Button>();
@@ -104,7 +104,7 @@ public sealed partial class QuickMenu : Module
             image.color = new Color(1f, 1f, 1f, 0.08f);
 
             Outline outline = buttonObj.AddComponent<Outline>();
-            outline.effectColor = Color.white;
+            outline.effectColor = new Color(1f, 1f, 1f, 0.35f);
             outline.effectDistance = new Vector2(1f, -1f);
 
             Button button = buttonObj.AddComponent<Button>();

@@ -54,56 +54,15 @@ public sealed partial class ShowHPOnDeath : Module
         tracker.LastHP = clampedHp;
     }
 
-    private static bool TryGetPhaseBossForScene(out string bossName)
+    private static List<BossHistoryPart> GetPhaseParts(string bossName, PhaseTracker tracker, int fallbackInitialHp)
     {
-        string scene = USceneManager.GetActiveScene().name;
-        return phaseBossScenes.TryGetValue(scene, out bossName);
-    }
-
-    private static void UpdateHeadCandidate(HealthManager self)
-    {
-        if (!TryGetPhaseBossForScene(out string bossName))
-        {
-            return;
-        }
-
-        if (BossNames.Map.TryGetValue(self.gameObject.name, out string mappedName) && mappedName == bossName)
-        {
-            return;
-        }
-
-        int hp = Math.Max(self.hp, 0);
-        string objName = self.gameObject.name;
-        bool nameLooksHead = objName.IndexOf("Head", StringComparison.OrdinalIgnoreCase) >= 0
-            || objName.IndexOf("Hornhead", StringComparison.OrdinalIgnoreCase) >= 0;
-
-        if (nameLooksHead)
-        {
-            headHPs[bossName] = hp;
-            headConfirmed.Add(bossName);
-            return;
-        }
-
-        if (hp == 0 || headConfirmed.Contains(bossName))
-        {
-            return;
-        }
-
-        if (!headHPs.TryGetValue(bossName, out int existing) || hp < existing)
-        {
-            headHPs[bossName] = hp;
-        }
-    }
-
-    private static string BuildPhaseLines(string bossName, PhaseTracker tracker, int fallbackInitialHp)
-    {
+        List<BossHistoryPart> parts = new();
         int fallbackMax = tracker.MaxHP[Math.Min(tracker.CurrentPhase, 2)];
         if (fallbackMax == 0 && fallbackInitialHp > 0)
         {
             fallbackMax = fallbackInitialHp;
         }
 
-        string phaseText = "";
         for (int i = 0; i < 3; i++)
         {
             int max = tracker.MaxHP[i] > 0 ? tracker.MaxHP[i] : fallbackMax;
@@ -126,12 +85,9 @@ public sealed partial class ShowHPOnDeath : Module
                 current = max;
             }
 
-            phaseText += $"HP: {current} / {max}\n";
+            parts.Add(new BossHistoryPart { Name = $"Phase {i + 1}", Hp = current, Max = max });
         }
 
-        int headHp = headHPs.TryGetValue(bossName, out int head) ? head : 0;
-        phaseText += $"HP: {headHp} / 0\n";
-
-        return phaseText;
+        return parts;
     }
 }

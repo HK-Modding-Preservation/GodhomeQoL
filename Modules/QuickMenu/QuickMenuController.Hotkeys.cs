@@ -24,7 +24,9 @@ public sealed partial class QuickMenu : Module
                 || IsFastDreamWarpRebinding()
                 || renameField != null
                 || gearSwitcherPresetRenameField != null
+                || settingsPresetRenameField != null
                 || waitingForQuickMenuHotkeyRebind
+                || waitingForQuickMenuControllerRebind
                 || waitingForOverlayHotkeyRebind;
         }
 
@@ -33,6 +35,9 @@ public sealed partial class QuickMenu : Module
             return (quickVisible && quickRenameMode)
                 || IsAnyRebinding()
                 || gearSwitcherPresetDeleteVisible
+                || settingsPresetConfirmVisible
+                || bossHistoryConfirmVisible
+                || IsBossHistorySearchFocused()
                 || gearSwitcherResetConfirmVisible
                 || quickSettingsResetConfirmVisible
                 || IsTeleportKitGameplayMenuVisible();

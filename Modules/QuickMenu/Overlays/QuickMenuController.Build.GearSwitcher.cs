@@ -64,9 +64,10 @@ public sealed partial class QuickMenu : Module
             panelRect.sizeDelta = new Vector2(PanelWidth, PanelHeight);
 
             Image panelImage = panel.AddComponent<Image>();
-            panelImage.color = OverlayPanelColor;
+            StyleHkPanel(panelImage);
 
             Text title = CreateText(panel.transform, "Title", "Modules/GearSwitcher".Localize(), 52, TextAnchor.MiddleCenter);
+            StyleHkTitle(title);
             RectTransform titleRect = title.rectTransform;
             titleRect.anchorMin = new Vector2(0.5f, 0.5f);
             titleRect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -110,36 +111,36 @@ public sealed partial class QuickMenu : Module
             );
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing;
+            rowY += GearSwitcherFirstGroupSpacing;
 
             CreateGearSwitcherSpellsRow(content, rowY);
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing + 10f;
+            rowY += GearSwitcherGroupSpacing;
             CreateGearSwitcherNailArtsRow(content, rowY);
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing;
+            rowY += GearSwitcherGroupSpacing;
             CreateGearSwitcherCloakRow(content, rowY);
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing;
+            rowY += GearSwitcherGroupSpacing;
             CreateGearSwitcherBindingsRow(content, rowY);
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing;
+            rowY += GearSwitcherGroupSpacing;
             CreateGearSwitcherHpMaskRow(content, rowY);
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing;
+            rowY += GearSwitcherHpSoulSpacing;
             CreateGearSwitcherSoulVesselRow(content, rowY);
 
             lastY = rowY;
-            rowY += GearSwitcherRowSpacing;
+            rowY += GearSwitcherAfterGroupsSpacing;
             CreateGearSwitcherNaillessRow(content, rowY);
 
             lastY = rowY;
-            float charmPromptSpacing = GearSwitcherRowSpacing + ((GearSwitcherCharmPromptRowHeight - RowHeight) * 0.5f);
+            float charmPromptSpacing = GearSwitcherPromptSpacing;
             rowY += charmPromptSpacing;
             CreateGearSwitcherCharmPromptRow(content, rowY);
 
@@ -249,12 +250,14 @@ public sealed partial class QuickMenu : Module
             float backY = GetFixedBackY(panelHeight);
             float buttonSpacing = 10f;
             float resetY = backY + (ButtonRowHeight + buttonSpacing) * 2f;
-            float topOffset = GetScrollTopOffset(panelHeight, titleRect);
+            gearSwitcherCharmNotchText = null;
+            Text? charmNotchInfo = EnsureGearSwitcherCharmNotchText();
+            float topOffset = GetScrollTopOffset(panelHeight, charmNotchInfo != null ? charmNotchInfo.rectTransform : titleRect);
             float bottomOffset = GetScrollBottomOffset(panelHeight, resetY);
             float viewHeight = Mathf.Max(0f, panelHeight - topOffset - bottomOffset);
             RectTransform content = CreateScrollContent(panel.transform, PanelWidth, panelHeight, topOffset, bottomOffset);
 
-            float rowY = GetRowStartY(panelHeight, RowStartY, topOffset);
+            float rowY = GetRowStartY(panelHeight, RowStartY, topOffset) + GearSwitcherCharmCostTopPadding;
             float lastY = rowY;
 
             Transform row = CreateGearSwitcherCharmCostsRow(content, "GearSwitcherCharmCostsRow1", rowY);
